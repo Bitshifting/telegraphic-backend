@@ -22,6 +22,7 @@ def createTables():
     c.execute(queries.CREATE_TABLE_IMAGES)
     c.execute(queries.CREATE_TABLE_IMAGE_HISTORY)
     c.execute(queries.CREATE_TABLE_ACTIVE_ACCESS_TOKENS)
+    c.execute(queries.CREATE_TABLE_FRIENDS_LIST)
     close(con)
 
 
@@ -33,6 +34,7 @@ def dropTables():
     c.execute(queries.DROP_TABLE_IMAGES)
     c.execute(queries.DROP_TABLE_IMAGE_HISTORY)
     c.execute(queries.DROP_TABLE_ACTIVE_ACCESS_TOKENS)
+    c.execute(queries.DROP_TABLE_FRIENDS_LIST)
     close(con)
 
 

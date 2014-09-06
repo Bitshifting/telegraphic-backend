@@ -45,6 +45,14 @@ CREATE_TABLE_IMAGE_HISTORY = """
     )
 """
 
+CREATE_TABLE_FRIENDS_LIST = """
+    CREATE TABLE IF NOT EXISTS friends (
+        friendEntryID INTEGER PRIMARY KEY AUTOINCREMENT,
+        username REFERENCES users (username),
+        friend REFERENCES users (username)
+    )
+"""
+
 DROP_TABLE_USERS = """
     DROP TABLE IF EXISTS users
 """
@@ -59,4 +67,8 @@ DROP_TABLE_IMAGES = """
 
 DROP_TABLE_IMAGE_HISTORY = """
     DROP TABLE IF EXISTS imageHistory
+"""
+
+DROP_TABLE_FRIENDS_LIST = """
+    DROP TABLE IF EXISTS friends
 """

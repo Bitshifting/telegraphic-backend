@@ -114,7 +114,8 @@ def userRegister():
         log('Registration attempt but no phone number provided in request.')
         return fail('Phone number not provided in registration.')
 
-    if len(request.json['username']) == 0 or len(request.json['passwordHash']) == 0 or len(request.json['phoneNumber']) == 0:
+    if len(request.json['username']) == 0 or len(request.json['passwordHash']) == 0 or len(
+            request.json['phoneNumber']) == 0:
         log('Attempted to register with a 0-length field.')
         return fail('Come on now, no 0-length fields.')
     log("Registering new user account: " + request.json['username'] + " (" + request.json['phoneNumber'] + ") " +
@@ -191,6 +192,7 @@ def userList():
     database.close(con)
 
     return res
+
 
 @post('/user/list')
 def userListWithoutMe():
@@ -355,7 +357,7 @@ def imageQuery():
     return {'success': True, 'items': finalSet}
 
 
-@post('/image/seen/{uuid}')
+@post('/image/seen/<uuid>')
 def imageSeen():
     """Set an image's hop count to -1 so it won't appear in the list of images the client gets when they query."""
     if not checkAccessToken():
@@ -376,6 +378,48 @@ def imageSeen():
 
     log('Client acknowledgement complete.')
     return success('Successfully acknowledged image.')
+
+
+# ######################################################################################################################
+# Friends Functions
+# ######################################################################################################################
+
+@post('/friends')
+def getFriends():
+    if not checkAccessToken():
+        return fail('Invalid access token.')
+
+    thisUser = accessTokenToUser(request.json['accessToken'])
+    log('Getting friends list for ' + thisUser)
+
+    con = database.connect()
+    c = con.cursor()
+
+    c.execute("SELECT friend FROM friends WHERE username=:username", {'username': thisUser})
+
+    res = jsonRows(c)
+    database.close(con)
+
+    return res
+
+
+@post('/friends/add/<friend>')
+def addFriend(friend):
+    if not checkAccessToken():
+        return fail('Invalid access token.')
+
+    thisUser = accessTokenToUser(request.json['accessToken'])
+    log('Adding friend ' + friend + ' for user ' + thisUser)
+
+    con = database.connect()
+    c = con.cursor()
+
+    c.execute("INSERT INTO friends (username, friend) VALUES (:username, :friend)",
+              {'username': thisUser, 'friend': friend})
+
+    database.close(con)
+
+    return success('Friend added!')
 
 
 print("Creating tables if need be...")
