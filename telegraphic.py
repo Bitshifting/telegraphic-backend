@@ -305,11 +305,18 @@ def imageUpdate():
     # Also, update the actual image...
     c.execute(
         "UPDATE images SET hopsLeft=:hopsLeft, image=:image, previousUser=:previousUser, nextUser=:nextUser WHERE imageUUID=:imageUUID",
-        {'hopsLeft': newHopsLeft, 'image': request.json['image'], 'imageUUID': request.json['uuid'], 'previousUser': thisUser, 'nextUser': request.json['nextUser']})
+        {'hopsLeft': newHopsLeft, 'image': request.json['image'], 'imageUUID': request.json['uuid'],
+         'previousUser': thisUser, 'nextUser': request.json['nextUser']})
 
-    # Add this user to the affected user list who need to see the final image...
-    c.execute("INSERT INTO imageHistory (imageUUID, username) VALUES (:imageUUID, :username)",
+    # Add this user to the affected user list who need to see the final image... but only if they're not already named
+    # by this image (to prevent repeats from sending it between the same people).
+    c.execute("SELECT COUNT(*) FROM imageHistory WHERE imageUUID=:imageUUID AND username=:username",
               {'imageUUID': request.json['uuid'], 'username': thisUser})
+    r = c.fetchone()
+
+    if r[0] == 0:
+        c.execute("INSERT INTO imageHistory (imageUUID, username) VALUES (:imageUUID, :username)",
+                  {'imageUUID': request.json['uuid'], 'username': thisUser})
 
     print("\tNew hop count: " + str(newHopsLeft) + "; Next user is " + str(request.json['nextUser']))
 
@@ -331,7 +338,6 @@ def imageQuery():
      finished images."""
     if not checkAccessToken():
         return fail('Invalid access token.')
-
 
     thisUser = accessTokenToUser(request.json['accessToken'])
     log('Querying images that belong to ' + thisUser)
