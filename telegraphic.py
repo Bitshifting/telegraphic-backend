@@ -436,4 +436,5 @@ def addFriend(friend):
 print("Creating tables if need be...")
 database.createTables()
 print("API starting...")
-run(host='kersten.io', port=8888, quiet=False, MEMFILE_MAX=10000000)
+bottle.BaseRequest.MEMFILE_MAX = 15000000
+run(host='kersten.io', port=8888, quiet=False)
