@@ -389,7 +389,7 @@ def imageSeen():
     con = database.connect()
     c = con.cursor()
 
-    c.execute("UPDATE images SET hopsLeft=-1 WHERE imageUUID=:imageUUID AND hopsLeft=0 AND username=:username",
+    c.execute("UPDATE imageHistory SET username=null WHERE imageUUID=:imageUUID AND username=:username",
               {'imageUUID': request.json['uuid'], 'username': thisUser})
 
     database.close(con)
