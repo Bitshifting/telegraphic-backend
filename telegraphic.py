@@ -171,6 +171,7 @@ def userLogin():
               {'accessToken': accessToken, 'username': request.json['username']})
     database.close(con)
 
+    log('Successful login.')
     return {'success': True, 'accessToken': accessToken, 'message': 'Logged in.'}
 
 
