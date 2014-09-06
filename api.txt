@@ -1,6 +1,6 @@
 FORMAT: 1A
 HOST: http://www.google.com
-VERSION: 4
+VERSION: 5
 
 # telegraphic
 Telegraphic is a collaborative image creation app which gives users only a short amount of time to contribute to a picture before it gets passed along to another user.
@@ -68,7 +68,7 @@ Using the ID that you get from a push notification or from querying images that 
 
 + Request (application/json)
 
-        { "accessToken": "someBase64AccessToken", "imageID": 123, "nextUser": "someOtherUsername", "image": "someBase64Image" }
+        { "accessToken": "someUUIDAccessToken", "imageID": 123, "nextUser": "someOtherUsername", "image": "someBase64Image" }
         
 + Response 200 (application/json)
 
@@ -81,7 +81,7 @@ If you don't receive push notifications, you can query to see if there are any i
 
 + Request (application/json)
 
-        { "accessToken": "someBase64AccessToken" }
+        { "accessToken": "someUUIDAccessToken" }
         
 + Response 200 (application/json)
 
