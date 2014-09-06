@@ -330,14 +330,14 @@ def imageQuery():
     c.execute("SELECT imageUUID, previousUser, editTime, hopsLeft, image FROM images WHERE nextUser=:thisUser",
               {'thisUser': thisUser})
 
-    firstSet = jsonRows(c).items
+    firstSet = jsonRows(c)['items']
 
     # Now, we also need any image whose UUID is mentioned with this username in the imageHistory, and whose hopCount is 0
     c.execute(
         "SELECT images.imageUUID, previousUser, editTime, hopsLeft, image FROM images JOIN imageHistory ON imageHistory.username=:username WHERE hopsLeft=0",
         {'username': thisUser})
 
-    secondSet = jsonRows(c).items
+    secondSet = jsonRows(c)['items']
 
     database.close(con)
 
