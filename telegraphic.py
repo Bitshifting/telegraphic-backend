@@ -303,6 +303,7 @@ def imageUpdate(uuid):
     c.execute("INSERT INTO imageHistory (imageUUID, username) VALUES (:imageUUID, :username)",
               {'imageUUID': uuid, 'username': thisUser})
 
+    print("\tNew hop count: " + str(newHopCount) + "; Next user is " + str(request.json['nextUser']))
 
     # Check if this is the final hop and if so, alert all users.
     if newHopCount == 0:
@@ -326,7 +327,7 @@ def imageQuery():
 
     thisUser = accessTokenToUser(request.json['accessToken'])
     log('Querying images that belong to ' + thisUser)
-    
+
     # Basically, look at the images table and see if any have nextUser set to us. This will be the first set of results.
     # Also look for images in the images table whose hopCount is 0 and with us in the history table linking us to this image.
     con = database.connect()
