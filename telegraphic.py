@@ -71,7 +71,7 @@ def checkAccessToken():
     con = database.connect()
     c = con.cursor()
     c.execute("SELECT COUNT(*) FROM activeAccessTokens WHERE accessToken=:accessToken",
-              {'accessToken', request.json['accessToken']})
+              {'accessToken': request.json['accessToken']})
 
     r = c.fetchone()
 
