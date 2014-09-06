@@ -1,6 +1,6 @@
 FORMAT: 1A
 HOST: http://www.google.com
-VERSION: 1
+VERSION: 2
 
 # telegraphic
 Telegraphic is a collaborative image creation app which gives users only a short amount of time to contribute to a picture before it gets passed along to another user.
@@ -17,7 +17,7 @@ Register a user.
 
         { "username": "myNewUsername", "passwordHash": "some SHA-512 hash of the password" }
 
-+ Response 200 (aplication/json)
++ Response 200 (application/json)
 
         { "success": true, "message": "User registered." }
         
