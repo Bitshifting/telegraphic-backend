@@ -267,12 +267,16 @@ def imageUpdate():
     """Update an existing image, and decrement its number of hops. If it reaches the end of its life, add it to the
     list of pending images that people need to see (and send push notifications)."""
     if not checkAccessToken():
+        log('Attempted update but bad access token.')
         return fail('Invalid access token.')
     if not 'nextUser' in request.json.keys():
+        log('Attempted update but no nextUser.')
         return fail('No nextUser specified.')
     if not 'image' in request.json.keys():
+        log('Attempted update but no image.')
         return fail('No image specified.')
     if not 'uuid' in request.json.keys():
+        log('Attempted update but no uuid.')
         return fail('No UUID specified.')
 
     log('Updating image...')
@@ -431,4 +435,4 @@ def addFriend(friend):
 print("Creating tables if need be...")
 database.createTables()
 print("API starting...")
-run(host='kersten.io', port=8888, quiet=True)
+run(host='kersten.io', port=8888, quiet=False)
