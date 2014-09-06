@@ -355,7 +355,7 @@ def imageQuery():
 
     # Now, we also need any image whose UUID is mentioned with this username in the imageHistory, and whose hopCount is 0
     c.execute(
-        "SELECT images.imageUUID, previousUser, editTime, hopsLeft, image FROM images JOIN imageHistory ON imageHistory.username=:username WHERE hopsLeft=0",
+        "SELECT images.imageUUID, previousUser, editTime, hopsLeft, image FROM images JOIN imageHistory ON imageHistory.username=:username WHERE hopsLeft=0 AND viewed=0",
         {'username': thisUser})
 
     secondSet = jsonRows(c)['items']
@@ -389,7 +389,7 @@ def imageSeen():
     con = database.connect()
     c = con.cursor()
 
-    c.execute("UPDATE imageHistory SET username=null WHERE imageUUID=:imageUUID AND username=:username",
+    c.execute("UPDATE imageHistory SET viewed=1 WHERE imageUUID=:imageUUID AND username=:username",
               {'imageUUID': request.json['uuid'], 'username': thisUser})
 
     database.close(con)

@@ -41,7 +41,8 @@ CREATE_TABLE_IMAGE_HISTORY = """
     CREATE TABLE IF NOT EXISTS imageHistory (
         historyID INTEGER PRIMARY KEY AUTOINCREMENT,
         imageUUID REFERENCES images (imageUUID),
-        username REFERENCES users (username)
+        username REFERENCES users (username),
+        viewed INTEGER DEFAULT 0 NOT NULL
     )
 """
 
