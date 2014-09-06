@@ -348,7 +348,7 @@ def imageQuery():
     c = con.cursor()
 
     # We need the rows from this and also anything that this username has in the image history which hasn't 0 hopCount.
-    c.execute("SELECT imageUUID, previousUser, editTime, hopsLeft, image FROM images WHERE nextUser=:thisUser",
+    c.execute("SELECT imageUUID, previousUser, editTime, hopsLeft, image FROM images WHERE nextUser=:thisUser AND hopsLeft<>0",
               {'thisUser': thisUser})
 
     firstSet = jsonRows(c)['items']
