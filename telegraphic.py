@@ -282,7 +282,7 @@ def imageUpdate():
 
     con = database.connect()
     c = con.cursor()
-    c.execute("SELECT COUNT(*) FROM images WHERE imageUUID=:imageUUID AND =:nextUser",
+    c.execute("SELECT COUNT(*) FROM images WHERE imageUUID=:imageUUID AND nextUser=:nextUser",
               {'imageUUID': request.json['uuid'], 'nextUser': thisUser})
 
     r = c.fetchone()
