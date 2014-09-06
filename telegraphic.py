@@ -161,6 +161,7 @@ def userLogin():
     r = c.fetchone()
     if r[0] == 0:
         log('Login failed.')
+        return fail('Invalid username or password.')
 
     # Alright, they've logged in, now generate a random access key and give it to them.
     # XXX: These probably won't collide.
