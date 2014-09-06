@@ -223,10 +223,10 @@ def imageCreate():
     thisImageUUID = str(uuid.uuid1())
 
     c.execute(
-        "INSERT INTO images (imageUUID, originalOwner, hopsLeft, editTime, image, nextUser) VALUES (:imageUUID, :originalOwner, :hopesLeft, :editTime, :image, :nextUser)",
+        "INSERT INTO images (imageUUID, originalOwner, hopsLeft, editTime, image, nextUser, previousUser) VALUES (:imageUUID, :originalOwner, :hopesLeft, :editTime, :image, :nextUser, :previousUser)",
         {'imageUUID': thisImageUUID, 'originalOwner': thisUser,
          'hopsLeft': request.json['hopsLeft'], 'editTime': request.json['editTime'], 'image': request.json['image'],
-         'nextUser': request.json['nextUser']})
+         'nextUser': request.json['nextUser'], 'previousUser': thisUser})
 
     # Add the initial creator into the log of people who should be notified when this image is done.
     c.execute("INSERT INTO imageHistory (imageUUID, username) VALUES (:imageUUID, :username)",
@@ -272,8 +272,8 @@ def imageUpdate(uuid):
     newHopCount = r[0] - 1
 
     # Also, update the actual image...
-    c.execute("UPDATE images SET hopCount=:hopCount, image=:image WHERE imageUUID=:imageUUID",
-              {'hopCount': newHopCount, 'image': request.json['image'], 'imageUUID': uuid})
+    c.execute("UPDATE images SET hopCount=:hopCount, image=:image, previousUser=:previousUser WHERE imageUUID=:imageUUID",
+              {'hopCount': newHopCount, 'image': request.json['image'], 'imageUUID': uuid, 'previousUser': thisUser})
 
     # Add this user to the affected user list who need to see the final image...
     c.execute("INSERT INTO imageHistory (imageUUID, username) VALUES (:imageUUID, :username)",
@@ -302,8 +302,16 @@ def imageQuery():
     # TODO:
     # Basically, look at the images table and see if any have nextUser set to us. This will be the first set of results.
     # Also look for images in the images table whose hopCount is 0 and with us in the history table linking us to this image.
+    con = database.connect()
+    c = con.cursor()
+
+    c.execute("SELECT ")
+
+
+    database.close(con)
 
     return {}
+
 
 
 

@@ -30,7 +30,8 @@ CREATE_TABLE_IMAGES = """
         hopsLeft INTEGER NOT NULL,
         editTime INTEGER NOT NULL,
         image BLOB NOT NULL,
-        nextUser REFERENCES users (username)
+        nextUser REFERENCES users (username),
+        previousUser REFERENCES users (username)
     )
 """
 
