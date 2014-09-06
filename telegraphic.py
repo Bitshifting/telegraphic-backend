@@ -329,8 +329,24 @@ def imageQuery():
 @post('/image/seen/{uuid}')
 def imageSeen():
     """Set an image's hop count to -1 so it won't appear in the list of images the client gets when they query."""
+    if not checkAccessToken():
+        return fail('Invalid access token.')
 
-    return {}
+    log('Client marking image seen...')
+
+    # Make sure a client can only mark their own images as seen, and only images that have a hopCount of 0.
+    thisUser = accessTokenToUser(request.json['accessToken'])
+
+    con = database.connect()
+    c = con.cursor()
+
+    c.execute("UPDATE images SET hopCount=-1 WHERE imageUUID=:imageUUID AND hopCount=0 AND username=:username",
+              {'imageUUID': uuid, 'username': thisUser})
+
+    database.close(con)
+
+    log('Client acknowledgement complete.')
+    return success('Successfully acknowledged image.')
 
 
 print("Creating tables if need be...")
