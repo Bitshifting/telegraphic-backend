@@ -344,8 +344,8 @@ def imageQuery():
 
     database.close(con)
 
-    print("\tThere are " + len(firstSet) + " images that need completing by this user.")
-    print("\tThere are " + len(secondSet) + " images that are done and need viewing by this user.")
+    print("\tThere are " + str(len(firstSet)) + " images that need completing by this user.")
+    print("\tThere are " + str(len(secondSet)) + " images that are done and need viewing by this user.")
     finalSet = []
     for thing in firstSet:
         finalSet.append(thing)
