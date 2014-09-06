@@ -292,23 +292,23 @@ def imageUpdate():
         return fail('Not the next user, or this image does not exist.')
 
     # Decrement its hop count and update its next user. If hop count is 0, set next user to null.
-    c.execute("SELECT hopCount FROM images WHERE imageUUID=:imageUUID", {'imageUUID': request.json['uuid']})
+    c.execute("SELECT hopsLeft FROM images WHERE imageUUID=:imageUUID", {'imageUUID': request.json['uuid']})
     r = c.fetchone()
-    newHopCount = r[0] - 1
+    newHopsLeft = r[0] - 1
 
     # Also, update the actual image...
     c.execute(
-        "UPDATE images SET hopCount=:hopCount, image=:image, previousUser=:previousUser, nextUser=:nextUser WHERE imageUUID=:imageUUID",
-        {'hopCount': newHopCount, 'image': request.json['image'], 'imageUUID': request.json['uuid'], 'previousUser': thisUser, 'nextUser': request.json['nextUser']})
+        "UPDATE images SET hopsLeft=:hopsLeft, image=:image, previousUser=:previousUser, nextUser=:nextUser WHERE imageUUID=:imageUUID",
+        {'hopsLeft': newHopsLeft, 'image': request.json['image'], 'imageUUID': request.json['uuid'], 'previousUser': thisUser, 'nextUser': request.json['nextUser']})
 
     # Add this user to the affected user list who need to see the final image...
     c.execute("INSERT INTO imageHistory (imageUUID, username) VALUES (:imageUUID, :username)",
               {'imageUUID': request.json['uuid'], 'username': thisUser})
 
-    print("\tNew hop count: " + str(newHopCount) + "; Next user is " + str(request.json['nextUser']))
+    print("\tNew hop count: " + str(newHopsLeft) + "; Next user is " + str(request.json['nextUser']))
 
     # Check if this is the final hop and if so, alert all users.
-    if newHopCount == 0:
+    if newHopsLeft == 0:
         log('Image updated, at the end of the line. Notifying all users.')
         # TODO: Push notifications to all users...
     else:
@@ -377,7 +377,7 @@ def imageSeen():
     con = database.connect()
     c = con.cursor()
 
-    c.execute("UPDATE images SET hopCount=-1 WHERE imageUUID=:imageUUID AND hopCount=0 AND username=:username",
+    c.execute("UPDATE images SET hopsLeft=-1 WHERE imageUUID=:imageUUID AND hopsLeft=0 AND username=:username",
               {'imageUUID': request.json['uuid'], 'username': thisUser})
 
     database.close(con)
