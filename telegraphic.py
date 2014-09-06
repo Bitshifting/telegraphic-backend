@@ -22,6 +22,39 @@ def success(msg):
     """Returns a success JSON to the user."""
     return {'success': True, 'message': msg}
 
+# #
+# Helper functions
+# #
+def jsonRow(cursor):
+    """Takes the next row from the cursor and formats it as a dictionary (JSON object as far as Bottle is concerned)."""
+    fields = [f[0] for f in cursor.description]
+
+    r = cursor.fetchone()
+    if r is not None:
+        i = 0
+        newDict = {}
+        for f in fields:
+            newDict[f] = r[i]
+            i += 1
+        return newDict
+    else:
+        return None
+
+
+def jsonRows(cursor):
+    """Queries a cursor and returns its rows as a JSON response (a list of dictionaries contained in a JSON object)."""
+    responseDict = {'success': 'true', 'items': []}
+
+    if cursor is None:
+        return responseDict
+
+    jr = jsonRow(cursor)
+
+    while jr is not None:
+        responseDict['items'].append(jr)
+        jr = jsonRow(cursor)
+
+    return responseDict
 
 # ######################################################################################################################
 # User Accounts
@@ -31,6 +64,8 @@ def success(msg):
 
 @post('/user/register')
 def userRegister():
+    """Register a user."""
+    
     if not 'username' in request.json.keys():
         log('Registration attempt but no username provided in request.')
         return fail('Username not provided in registration.')
@@ -62,6 +97,8 @@ def userRegister():
 
 @post('/user/login')
 def userLogin():
+    """Log a user in and generate a unique ID for this session."""
+
     if not 'username' in request.json.keys():
         log('Login attempt but no username provided in request.')
         return fail('Username not provided in login.')
@@ -87,9 +124,22 @@ def userLogin():
 
     c.execute("INSERT INTO activeAccessTokens (accessToken, username) VALUES (:accessKey, :username)",
               {'accessToken': accessKey, 'username': request.json['username']})
+    database.close(con)
 
     return {'success': True, 'accessToken': accessKey, 'message': 'Logged in.'}
 
+@get('/user/list')
+def userList():
+    """Return a list of users in the database so others can send images to them."""
+
+    con = database.connect()
+    c = con.cursor()
+    c.execute("SELECT username FROM users")
+
+    res = jsonRows(c)
+    database.close(con)
+
+    return res
 # ######################################################################################################################
 # Image Handling
 # ######################################################################################################################
