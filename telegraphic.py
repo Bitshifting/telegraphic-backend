@@ -262,8 +262,8 @@ def imageCreate():
     return success('Image created and next user will be alerted.')
 
 
-@post('/image/update/{UUID}')
-def imageUpdate(uuid):
+@post('/image/update')
+def imageUpdate():
     """Update an existing image, and decrement its number of hops. If it reaches the end of its life, add it to the
     list of pending images that people need to see (and send push notifications)."""
     if not checkAccessToken():
@@ -272,6 +272,8 @@ def imageUpdate(uuid):
         return fail('No nextUser specified.')
     if not 'image' in request.json.keys():
         return fail('No image specified.')
+    if not 'uuid' in request.json.keys():
+        return fail('No UUID specified.')
 
     log('Updating image...')
 
@@ -280,8 +282,8 @@ def imageUpdate(uuid):
 
     con = database.connect()
     c = con.cursor()
-    c.execute("SELECT COUNT(*) FROM images WHERE imageUUID=:imageUUID AND nextUser=:nextUser",
-              {'imageUUID': uuid, 'nextUser': thisUser})
+    c.execute("SELECT COUNT(*) FROM images WHERE imageUUID=:imageUUID AND =:nextUser",
+              {'imageUUID': request.json['uuid'], 'nextUser': thisUser})
 
     r = c.fetchone()
 
@@ -290,18 +292,18 @@ def imageUpdate(uuid):
         return fail('Not the next user, or this image does not exist.')
 
     # Decrement its hop count and update its next user. If hop count is 0, set next user to null.
-    c.execute("SELECT hopCount FROM images WHERE imageUUID=:imageUUID", {'imageUUID': uuid})
+    c.execute("SELECT hopCount FROM images WHERE imageUUID=:imageUUID", {'imageUUID': request.json['uuid']})
     r = c.fetchone()
     newHopCount = r[0] - 1
 
     # Also, update the actual image...
     c.execute(
         "UPDATE images SET hopCount=:hopCount, image=:image, previousUser=:previousUser, nextUser=:nextUser WHERE imageUUID=:imageUUID",
-        {'hopCount': newHopCount, 'image': request.json['image'], 'imageUUID': uuid, 'previousUser': thisUser, 'nextUser': request.json['nextUser']})
+        {'hopCount': newHopCount, 'image': request.json['image'], 'imageUUID': request.json['uuid'], 'previousUser': thisUser, 'nextUser': request.json['nextUser']})
 
     # Add this user to the affected user list who need to see the final image...
     c.execute("INSERT INTO imageHistory (imageUUID, username) VALUES (:imageUUID, :username)",
-              {'imageUUID': uuid, 'username': thisUser})
+              {'imageUUID': request.json['uuid'], 'username': thisUser})
 
     print("\tNew hop count: " + str(newHopCount) + "; Next user is " + str(request.json['nextUser']))
 
@@ -359,11 +361,13 @@ def imageQuery():
     return {'success': True, 'items': finalSet}
 
 
-@post('/image/seen/<uuid>')
+@post('/image/seen')
 def imageSeen():
     """Set an image's hop count to -1 so it won't appear in the list of images the client gets when they query."""
     if not checkAccessToken():
         return fail('Invalid access token.')
+    if not 'uuid' in request.json.keys():
+        return fail('No UUID specified.')
 
     log('Client marking image seen...')
 
@@ -374,7 +378,7 @@ def imageSeen():
     c = con.cursor()
 
     c.execute("UPDATE images SET hopCount=-1 WHERE imageUUID=:imageUUID AND hopCount=0 AND username=:username",
-              {'imageUUID': uuid, 'username': thisUser})
+              {'imageUUID': request.json['uuid'], 'username': thisUser})
 
     database.close(con)
 
