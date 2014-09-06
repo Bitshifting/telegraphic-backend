@@ -1,6 +1,6 @@
 FORMAT: 1A
 HOST: http://www.google.com
-VERSION: 8
+VERSION: 9
 
 # telegraphic
 Telegraphic is a collaborative image creation app which gives users only a short amount of time to contribute to a picture before it gets passed along to another user.
@@ -86,8 +86,8 @@ If you don't receive push notifications, you can query to see if there are any i
 + Response 200 (application/json)
 
         { "success": true, "items": [
-            { "imageUUID": "someUUIDImageID", "from": "someOtherUsername", "editTime": 10, "hopsLeft": 6, "image": "someBase64Image" },
-            { "imageUUID": "someUUIDImageID", "from": "someOtherUsername", "editTime": 10, "hopsLeft": 0, "image": "someBase64Image" }
+            { "imageUUID": "someUUIDImageID", "previousUser": "someOtherUsername", "editTime": 10, "hopsLeft": 6, "image": "someBase64Image" },
+            { "imageUUID": "someUUIDImageID", "previousUser": "someOtherUsername", "editTime": 10, "hopsLeft": 0, "image": "someBase64Image" }
             ]
         }
 
