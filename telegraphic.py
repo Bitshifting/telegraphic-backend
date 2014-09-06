@@ -323,9 +323,10 @@ def imageQuery():
     if not checkAccessToken():
         return fail('Invalid access token.')
 
-    log('Querying images that belong to this user...')
-    thisUser = accessTokenToUser(request.json['accessToken'])
 
+    thisUser = accessTokenToUser(request.json['accessToken'])
+    log('Querying images that belong to ' + thisUser)
+    
     # Basically, look at the images table and see if any have nextUser set to us. This will be the first set of results.
     # Also look for images in the images table whose hopCount is 0 and with us in the history table linking us to this image.
     con = database.connect()
@@ -346,8 +347,8 @@ def imageQuery():
 
     database.close(con)
 
-    print("\tThere are " + str(len(firstSet)) + " images that need completing by this user.")
-    print("\tThere are " + str(len(secondSet)) + " images that are done and need viewing by this user.")
+    print("\tThere are " + str(len(firstSet)) + " images that need completing.")
+    print("\tThere are " + str(len(secondSet)) + " images that are done and need viewing.")
     finalSet = []
     for thing in firstSet:
         finalSet.append(thing)
