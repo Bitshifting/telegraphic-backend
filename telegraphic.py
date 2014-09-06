@@ -318,7 +318,7 @@ def imageQuery():
 
     # Now, we also need any image whose UUID is mentioned with this username in the imageHistory, and whose hopCount is 0
     c.execute(
-        "SELECT imageUUID, previousUser, editTime, hopsLeft, image FROM image JOIN imageHistory ON imageHistory.users=:username WHERE hopsLeft=0",
+        "SELECT imageUUID, previousUser, editTime, hopsLeft, image FROM images JOIN imageHistory ON imageHistory.users=:username WHERE hopsLeft=0",
         {'username': thisUser})
 
     secondSet = jsonRows(c).items
