@@ -2,7 +2,9 @@ import bottle
 from bottle import error, get, post, run, request
 import database
 import uuid
+import time
 
+readyForRequests = False
 
 @error(404)
 def error404(error):
@@ -23,6 +25,11 @@ def success(msg):
     """Returns a success JSON to the user."""
     return {'success': True, 'message': msg}
 
+def checkReady():
+    if not readyForRequests:
+        log('Not ready...')
+        return False
+    return True
 
 # #
 # Helper functions
@@ -103,6 +110,7 @@ def accessTokenToUser(token):
 
 @post('/user/register')
 def userRegister():
+    checkReady()
     """Register a user."""
 
     if not 'username' in request.json.keys():
@@ -147,6 +155,7 @@ def userRegister():
 @post('/user/login')
 def userLogin():
     """Log a user in and generate a unique ID for this session."""
+    checkReady()
 
     if not 'username' in request.json.keys():
         log('Login attempt but no username provided in request.')
@@ -183,6 +192,7 @@ def userLogin():
 @get('/user/list')
 def userList():
     """Return a list of users in the database so others can send images to them."""
+    checkReady()
 
     log('Returning a list of users...')
     con = database.connect()
@@ -198,6 +208,7 @@ def userList():
 @post('/user/list')
 def userListWithoutMe():
     """Return a list of users in the database so others can send images to them. Doesn't include yourself."""
+    checkReady()
 
     log('Returning a list of users (excluding this one)...')
     thisUser = accessTokenToUser(request.json['accessToken'])
@@ -219,6 +230,8 @@ def userListWithoutMe():
 @post('/image/create')
 def imageCreate():
     """Create an initial image."""
+    checkReady()
+
     if not checkAccessToken():
         return fail('Invalid access token.')
     if not 'editTime' in request.json.keys():
@@ -267,6 +280,8 @@ def imageCreate():
 def imageUpdate():
     """Update an existing image, and decrement its number of hops. If it reaches the end of its life, add it to the
     list of pending images that people need to see (and send push notifications)."""
+    checkReady()
+
     if not checkAccessToken():
         log('Attempted update but bad access token.')
         return fail('Invalid access token.')
@@ -336,6 +351,8 @@ def imageUpdate():
 def imageQuery():
     """Returns a list of images that a user should see. Some might be incomplete, needing additions, and others might be
      finished images."""
+    checkReady()
+
     if not checkAccessToken():
         return fail('Invalid access token.')
 
@@ -376,6 +393,8 @@ def imageQuery():
 @post('/image/seen')
 def imageSeen():
     """Set an image's hop count to -1 so it won't appear in the list of images the client gets when they query."""
+    checkReady()
+
     if not checkAccessToken():
         return fail('Invalid access token.')
     if not 'uuid' in request.json.keys():
@@ -404,6 +423,8 @@ def imageSeen():
 
 @post('/friends')
 def getFriends():
+    checkReady()
+
     if not checkAccessToken():
         return fail('Invalid access token.')
 
@@ -423,6 +444,8 @@ def getFriends():
 
 @post('/friends/add/<friend>')
 def addFriend(friend):
+    checkReady()
+
     if not checkAccessToken():
         return fail('Invalid access token.')
 
@@ -445,3 +468,6 @@ database.createTables()
 print("API starting...")
 bottle.BaseRequest.MEMFILE_MAX = 15000000
 run(host='kersten.io', port=8888, quiet=False)
+
+time.sleep(4)
+readyForRequests = True
