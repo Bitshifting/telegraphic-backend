@@ -341,7 +341,12 @@ def imageQuery():
 
     database.close(con)
 
-    return {'success': True, 'items': firstSet + secondSet}
+    finalSet = []
+    for thing in firstSet:
+        finalSet.append(thing)
+    for thing in secondSet:
+        finalSet.append(thing)
+    return {'success': True, 'items': finalSet}
 
 
 @post('/image/seen/{uuid}')
