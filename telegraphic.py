@@ -219,16 +219,29 @@ def imageCreate():
         return fail('Invalid nextUser.')
 
     # Add the image to the pending queue.
+    thisUser = accessTokenToUser(request.json['accessToken'])
+    thisImageUUID = str(uuid.uuid1())
+
     c.execute(
-        "INSERT INTO images (originalOwner, hopsLeft, editTime, image, nextUser) VALUES (:originalOwner, :hopesLeft, :editTime, :image, :nextUser)",
-        {'originalOwner': accessTokenToUser(request.json['accessToken']), 'hopsLeft': request.json['hopsLeft'],
+        "INSERT INTO images (imageUUID, originalOwner, hopsLeft, editTime, image, nextUser) VALUES (:imageUUID, :originalOwner, :hopesLeft, :editTime, :image, :nextUser)",
+        {'imageUUID': thisImageUUID, 'originalOwner': thisUser,
+         'hopsLeft': request.json['hopsLeft'],
          'editTime': request.json['editTime'], 'image': request.json['image'], 'nextUser': request.json['nextUser']})
 
-    # TODO: Send push notification
+    # Add the initial creator into the log of people who should be notified when this image is done.
+    c.execute("INSERT INTO imageHistory (imageUUID, username) VALUES (:imageUUID, :username)",
+              {'imageUUID': thisImageUUID, 'username': thisUser})
+
+    # TODO: Send push notification to the next user.
 
     database.close(con)
     log('Image successfully created.')
     return success('Image created and next user will be alerted.')
+
+
+@post('/image/update/{UUID}')
+def imageUpdate(uuid):
+    return {}
 
 
 print("Creating tables if need be...")
