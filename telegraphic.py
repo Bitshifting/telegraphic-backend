@@ -264,6 +264,7 @@ def imageCreate():
 
 @post('/image/update')
 def imageUpdate():
+    log('IN THE IMAGE UPDATE THING!!!!!!!!!!!\n\n\n\n\n')
     """Update an existing image, and decrement its number of hops. If it reaches the end of its life, add it to the
     list of pending images that people need to see (and send push notifications)."""
     if not checkAccessToken():
@@ -435,4 +436,4 @@ def addFriend(friend):
 print("Creating tables if need be...")
 database.createTables()
 print("API starting...")
-run(host='kersten.io', port=8888, quiet=False)
+run(host='kersten.io', port=8888, quiet=False, MEMFILE_MAX=10000000)
