@@ -1,0 +1,77 @@
+FORMAT: 1A
+HOST: http://www.google.com
+VERSION: 1
+
+# telegraphic
+Telegraphic is a collaborative image creation app which gives users only a short amount of time to contribute to a picture before it gets passed along to another user.
+
+# Group User Accounts
+When a user logs in, they receive an access token which must be sent with any other API request to identify the user.
+
+## Register User [/user/register]
+
+### Register [POST]
+Register a user.
+
++ Request (application/json)
+
+        { "username": "myNewUsername", "passwordHash": "some SHA-512 hash of the password" }
+
++ Response 200 (aplication/json)
+
+        { "success": true, "message": "User registered." }
+        
+## Login [/user/login]
+
+### Login [POST]
+Log in as a user and receive an access token.
+
++ Request (application/json)
+
+        { "username": "yourUsername", "passwordHash": "yourPasswordHash" }
+
++ Response 200 (application/json)
+
+        { "accessToken": "someBase64SAccessToken", "success": true, "message": "logged in" }
+
+## User List [/user/list]
+
+### Get Users [GET]
++ Response 200 (application/json)
+
+        { "success": true, "items": [
+            {"username": "user1"},
+            {"username": "user2"}
+            ]
+        }
+
+# Group Image Handling
+The first user will be responsible for creating the base image, including specifying restrictions on the image (like the number of seconds someone gets to contribute, the types of brushes and colors that can be used, etc.)
+
+## Creation [/image/create]
+
+### Create Initial Image [POST]
+Todo here: Be able to specifiy restrictions on brushes, colors, line sizes, etc.
+
++ Request (application/json)
+
+        { "accessToken": "someBase64SAccessToken", "ttl": 10, "nextUser": "someOtherUsername", "image": "someBase64Image" }
+
++ Response 200 (application/json)
+
+        { "success": true, "message": "Image created and next user will be alerted." }
+       
+## Updating [/image/update/{id}]
+Using the ID that you get from a push notification or from querying images that belong to you (and are waiting for you to update), updates an image with a new version and pass it on to the next person.
+
+### Update Image [POST]
+
++ Request (application/json)
+
+        { "accessToken": "someBase64AccessToken", "imageID": 123, "nextUser": "someOtherUsername", "image": "someBase64Image" }
+        
++ Response 200 (application/json)
+
+        { "success": true, "message": "Image passed along to the next user!" }
+        
+        
