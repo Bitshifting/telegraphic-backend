@@ -1,6 +1,6 @@
 FORMAT: 1A
 HOST: http://www.google.com
-VERSION: 6
+VERSION: 7
 
 # telegraphic
 Telegraphic is a collaborative image creation app which gives users only a short amount of time to contribute to a picture before it gets passed along to another user.
@@ -61,14 +61,14 @@ Todo here: Be able to specifiy restrictions on brushes, colors, line sizes, etc.
 
         { "success": true, "message": "Image created and next user will be alerted." }
        
-## Updating [/image/update/{id}]
+## Updating [/image/update/{uuid}]
 Using the ID that you get from a push notification or from querying images that belong to you (and are waiting for you to update), updates an image with a new version and pass it on to the next person.
 
 ### Update Image [POST]
 
 + Request (application/json)
 
-        { "accessToken": "someUUIDAccessToken", "imageID": 123, "nextUser": "someOtherUsername", "image": "someBase64Image" }
+        { "accessToken": "someUUIDAccessToken", "nextUser": "someOtherUsername", "image": "someBase64Image" }
         
 + Response 200 (application/json)
 
@@ -86,8 +86,8 @@ If you don't receive push notifications, you can query to see if there are any i
 + Response 200 (application/json)
 
         { "success": true, "items": [
-            { "imageID": 12, "from": "someOtherUsername", "editTime": 10, "hopsLeft": 6, "image": "someBase64Image" },
-            { "imageID": 14, "from": "someOtherUsername", "editTime": 10, "hopsLeft": 0, "image": "someBase64Image" }
+            { "imageUUID": "someUUIDImageID", "from": "someOtherUsername", "editTime": 10, "hopsLeft": 6, "image": "someBase64Image" },
+            { "imageUUID": "someUUIDImageID", "from": "someOtherUsername", "editTime": 10, "hopsLeft": 0, "image": "someBase64Image" }
             ]
         }
         
