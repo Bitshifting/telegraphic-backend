@@ -296,8 +296,8 @@ def imageUpdate(uuid):
 
     # Also, update the actual image...
     c.execute(
-        "UPDATE images SET hopCount=:hopCount, image=:image, previousUser=:previousUser WHERE imageUUID=:imageUUID",
-        {'hopCount': newHopCount, 'image': request.json['image'], 'imageUUID': uuid, 'previousUser': thisUser})
+        "UPDATE images SET hopCount=:hopCount, image=:image, previousUser=:previousUser, nextUser=:nextUser WHERE imageUUID=:imageUUID",
+        {'hopCount': newHopCount, 'image': request.json['image'], 'imageUUID': uuid, 'previousUser': thisUser, 'nextUser': request.json['nextUser']})
 
     # Add this user to the affected user list who need to see the final image...
     c.execute("INSERT INTO imageHistory (imageUUID, username) VALUES (:imageUUID, :username)",
