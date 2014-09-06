@@ -62,7 +62,7 @@ def jsonRows(cursor):
 # Access token functions
 # #
 
-def checkAccessToken(token):
+def checkAccessToken():
     """Make sure a certain access token is still valid and can be used to manipulate pictures."""
 
     if not 'accessToken' in request.json.keys():
@@ -225,8 +225,8 @@ def imageCreate():
     c.execute(
         "INSERT INTO images (imageUUID, originalOwner, hopsLeft, editTime, image, nextUser) VALUES (:imageUUID, :originalOwner, :hopesLeft, :editTime, :image, :nextUser)",
         {'imageUUID': thisImageUUID, 'originalOwner': thisUser,
-         'hopsLeft': request.json['hopsLeft'],
-         'editTime': request.json['editTime'], 'image': request.json['image'], 'nextUser': request.json['nextUser']})
+         'hopsLeft': request.json['hopsLeft'], 'editTime': request.json['editTime'], 'image': request.json['image'],
+         'nextUser': request.json['nextUser']})
 
     # Add the initial creator into the log of people who should be notified when this image is done.
     c.execute("INSERT INTO imageHistory (imageUUID, username) VALUES (:imageUUID, :username)",
@@ -241,7 +241,70 @@ def imageCreate():
 
 @post('/image/update/{UUID}')
 def imageUpdate(uuid):
+    """Update an existing image, and decrement its number of hops. If it reaches the end of its life, add it to the
+    list of pending images that people need to see (and send push notifications)."""
+    if not checkAccessToken():
+        return fail('Invalid access token.')
+    if not 'nextUser' in request.json.keys():
+        return fail('No nextUser specified.')
+    if not 'image' in request.json.keys():
+        return fail('No image specified.')
+
+    log('Updating image...')
+
+    # Check that this image has this user specified as its next user (aka that we have permission to edit this image).
+    thisUser = accessTokenToUser(request.json['accessToken'])
+
+    con = database.connect()
+    c = con.cursor()
+    c.execute("SELECT COUNT(*) FROM images WHERE imageUUID=:imageUUID AND nextUser=:nextUser",
+              {'imageUUID': uuid, 'nextUser': thisUser})
+
+    r = c.fetchone()
+
+    if r[0] == 0:
+        log('Not allowed to update this image, or the image does not exist.')
+        return fail('Not the next user, or this image does not exist.')
+
+    # Decrement its hop count and update its next user. If hop count is 0, set next user to null.
+    c.execute("SELECT hopCount FROM images WHERE imageUUID=:imageUUID", {'imageUUID': uuid})
+    r = c.fetchone()
+    newHopCount = r[0] - 1
+
+    # Also, update the actual image...
+    c.execute("UPDATE images SET hopCount=:hopCount, image=:image WHERE imageUUID=:imageUUID",
+              {'hopCount': newHopCount, 'image': request.json['image'], 'imageUUID': uuid})
+
+    # Add this user to the affected user list who need to see the final image...
+    c.execute("INSERT INTO imageHistory (imageUUID, username) VALUES (:imageUUID, :username)",
+              {'imageUUID': uuid, 'username': thisUser})
+
+
+    # Check if this is the final hop and if so, alert all users.
+    if newHopCount == 0:
+        log('Image updated, at the end of the line. Notifying all users.')
+        # TODO: Push notifications to all users...
+    else:
+        log('Image updated, passing to next user.')
+        # TODO: Push notify nextUser
+
+    database.close(con)
+    return success('Image passed along to the next user!')
+
+
+@post('/image/query')
+def imageQuery():
+    """Returns a list of images that a user should see. Some might be incomplete, needing additions, and others might be
+     finished images."""
+    if not checkAccessToken():
+        return fail('Invalid access token.')
+
+    # TODO:
+    # Basically, look at the images table and see if any have nextUser set to us. This will be the first set of results.
+    # Also look for images in the images table whose hopCount is 0 and with us in the history table linking us to this image.
+
     return {}
+
 
 
 print("Creating tables if need be...")
