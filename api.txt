@@ -1,6 +1,6 @@
 FORMAT: 1A
 HOST: http://www.google.com
-VERSION: 9
+VERSION: 10
 
 # telegraphic
 Telegraphic is a collaborative image creation app which gives users only a short amount of time to contribute to a picture before it gets passed along to another user.
@@ -91,14 +91,14 @@ If you don't receive push notifications, you can query to see if there are any i
             ]
         }
 
-## Cleanup [/image/seen]
+## Cleanup [/image/seen/{uuid}]
 Once an image has been finished, and a user who contributed to the image has viewed it, that user should hit this endpoint to avoid being notified again about this image (otherwis it will stay in the alert queue).
 
 ### Seen Image [POST]
 
 + Request (application/json)
 
-        { "accessToken": "someUUIDAccessToken", "imageUUID": "someUUIDImageID" }
+        { "accessToken": "someUUIDAccessToken" }
 
 + Response 200 (application/json)
 

@@ -326,7 +326,7 @@ def imageQuery():
     return {'success': True, 'items': firstSet + secondSet}
 
 
-@post('/image/seen')
+@post('/image/seen/{uuid}')
 def imageSeen():
     """Set an image's hop count to -1 so it won't appear in the list of images the client gets when they query."""
 
