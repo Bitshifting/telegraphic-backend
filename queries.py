@@ -7,7 +7,7 @@ CREATE_TABLE_USERS = """
          userID INTEGER PRIMARY KEY AUTOINCREMENT,
          username TEXT NOT NULL,
          passwordHash TEXT NOT NULL,
-         createdOn INTEGER DEFAULT strftime('%s', 'now') NOT NULL,
+        createdOn INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL,
          phoneNumber TEXT NOT NULL
      )
 """
@@ -17,7 +17,7 @@ CREATE_TABLE_ACTIVE_ACCESS_TOKENS = """
         tokenID INTEGER PRIMARY KEY AUTOINCREMENT,
         accessToken TEXT NOT NULL,
         username REFERENCES users (username),
-        createdOn INTEGER DEFAULT strftime('%s', 'now') NOT NULL
+        createdOn INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL
     )
 """
 
@@ -26,7 +26,7 @@ CREATE_TABLE_IMAGES = """
         imageID INTEGER PRIMARY KEY AUTOINCREMENT,
         imageUUID TEXT NOT NULL,
         originalOwner REFERENCES users (username),
-        createdOn INTEGER DEFAULT strftime('%s', 'now') NOT NULL,
+        createdOn INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL,
         hopsLeft INTEGER NOT NULL,
         editTime INTEGER NOT NULL,
         image BLOB NOT NULL,
@@ -60,8 +60,3 @@ DROP_TABLE_IMAGES = """
 DROP_TABLE_IMAGE_HISTORY = """
     DROP TABLE IF EXISTS imageHistory
 """
-
-# ######################################################################################################################
-# Queries
-# ######################################################################################################################
-
