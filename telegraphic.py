@@ -164,13 +164,13 @@ def userLogin():
 
     # Alright, they've logged in, now generate a random access key and give it to them.
     # XXX: These probably won't collide.
-    accessKey = str(uuid.uuid1())
+    accessToken = str(uuid.uuid1())
 
-    c.execute("INSERT INTO activeAccessTokens (accessToken, username) VALUES (:accessKey, :username)",
-              {'accessToken': accessKey, 'username': request.json['username']})
+    c.execute("INSERT INTO activeAccessTokens (accessToken, username) VALUES (:accessToken, :username)",
+              {'accessToken': accessToken, 'username': request.json['username']})
     database.close(con)
 
-    return {'success': True, 'accessToken': accessKey, 'message': 'Logged in.'}
+    return {'success': True, 'accessToken': accessToken, 'message': 'Logged in.'}
 
 
 @get('/user/list')
