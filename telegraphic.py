@@ -10,6 +10,12 @@ readyForRequests = False
 def error404(error):
     return "404"
 
+@get('/kickoff')
+def kickoff():
+    """Because bottle stupidly starts before the database is actually created basically."""
+    readyForRequests = True
+    print("Ready for requests.")
+    return {'success': True, 'message': 'Hopefully now ready for requests.'}
 
 def log(msg):
     """Prints a message alongside the IP of the client that generated it."""
@@ -468,7 +474,3 @@ database.createTables()
 print("API starting...")
 bottle.BaseRequest.MEMFILE_MAX = 15000000
 run(host='kersten.io', port=8888, quiet=False)
-
-time.sleep(4)
-readyForRequests = True
-print("Ready for requests.")
