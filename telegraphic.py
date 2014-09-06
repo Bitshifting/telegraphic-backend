@@ -471,3 +471,4 @@ run(host='kersten.io', port=8888, quiet=False)
 
 time.sleep(4)
 readyForRequests = True
+print("Ready for requests.")
