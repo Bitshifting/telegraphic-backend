@@ -225,7 +225,7 @@ def imageCreate():
     thisImageUUID = str(uuid.uuid1())
 
     c.execute(
-        "INSERT INTO images (imageUUID, originalOwner, hopsLeft, editTime, image, nextUser, previousUser) VALUES (:imageUUID, :originalOwner, :hopesLeft, :editTime, :image, :nextUser, :previousUser)",
+        "INSERT INTO images (imageUUID, originalOwner, hopsLeft, editTime, image, nextUser, previousUser) VALUES (:imageUUID, :originalOwner, :hopsLeft, :editTime, :image, :nextUser, :previousUser)",
         {'imageUUID': thisImageUUID, 'originalOwner': thisUser,
          'hopsLeft': request.json['hopsLeft'], 'editTime': request.json['editTime'], 'image': request.json['image'],
          'nextUser': request.json['nextUser'], 'previousUser': thisUser})
