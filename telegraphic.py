@@ -265,7 +265,6 @@ def imageCreate():
 
 @post('/image/update')
 def imageUpdate():
-    log('IN THE IMAGE UPDATE THING!!!!!!!!!!!\n\n\n\n\n')
     """Update an existing image, and decrement its number of hops. If it reaches the end of its life, add it to the
     list of pending images that people need to see (and send push notifications)."""
     if not checkAccessToken():
@@ -317,6 +316,7 @@ def imageUpdate():
     if r[0] == 0:
         c.execute("INSERT INTO imageHistory (imageUUID, username) VALUES (:imageUUID, :username)",
                   {'imageUUID': request.json['uuid'], 'username': thisUser})
+        log('IN THE IMAGE HISTORY ADD THING!!!!!!!!!!!\n\n\n\n\n')
 
     print("\tNew hop count: " + str(newHopsLeft) + "; Next user is " + str(request.json['nextUser']))
 
