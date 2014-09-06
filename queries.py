@@ -24,6 +24,7 @@ CREATE_TABLE_ACTIVE_ACCESS_TOKENS = """
 CREATE_TABLE_IMAGES = """
     CREATE TABLE IF NOT EXISTS images (
         imageID INTEGER PRIMARY KEY AUTOINCREMENT,
+        imageUUID TEXT NOT NULL,
         originalOwner REFERENCES users (username),
         createdOn INTEGER DEFAULT strftime('%s', 'now') NOT NULL,
         hopsLeft INTEGER NOT NULL,
@@ -38,7 +39,7 @@ CREATE_TABLE_IMAGES = """
 CREATE_TABLE_IMAGE_HISTORY = """
     CREATE TABLE IF NOT EXISTS imageHistory (
         historyID INTEGER PRIMARY KEY AUTOINCREMENT,
-        imageID REFERENCES images (imageID),
+        imageUUID REFERENCES images (imageUUID),
         username REFERENCES users (username)
     )
 """
