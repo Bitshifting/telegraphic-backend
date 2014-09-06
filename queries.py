@@ -8,6 +8,7 @@ CREATE_TABLE_USERS = """
          username TEXT NOT NULL,
          passwordHash TEXT NOT NULL,
          createdOn INTEGER DEFAULT strftime('%s', 'now') NOT NULL
+         phoneNumber TEXT NOT NULL
      )
 """
 
