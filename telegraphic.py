@@ -352,4 +352,4 @@ def imageSeen():
 print("Creating tables if need be...")
 database.createTables()
 print("API starting...")
-run(host='localhost', port=8082, quiet=True)
+run(host='kersten.io', port=8888, quiet=True)
