@@ -13,7 +13,8 @@ def error404(error):
 @get('/kickoff')
 def kickoff():
     """Because bottle stupidly starts before the database is actually created basically."""
-    nonlocal readyForRequests = True
+    global readyForRequests
+    readyForRequests = True
     print("Ready for requests.")
     return {'success': True, 'message': 'Hopefully now ready for requests.'}
 
