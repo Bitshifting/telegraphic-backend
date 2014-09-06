@@ -1,6 +1,6 @@
 FORMAT: 1A
 HOST: http://www.google.com
-VERSION: 3
+VERSION: 4
 
 # telegraphic
 Telegraphic is a collaborative image creation app which gives users only a short amount of time to contribute to a picture before it gets passed along to another user.
@@ -55,7 +55,7 @@ Todo here: Be able to specifiy restrictions on brushes, colors, line sizes, etc.
 
 + Request (application/json)
 
-        { "accessToken": "someBase64SAccessToken", "ttl": 10, "nextUser": "someOtherUsername", "image": "someBase64Image" }
+        { "accessToken": "someBase64SAccessToken", "editTime": 10, "hopsLeft": 6, "nextUser": "someOtherUsername", "image": "someBase64Image" }
 
 + Response 200 (application/json)
 
@@ -75,7 +75,7 @@ Using the ID that you get from a push notification or from querying images that 
         { "success": true, "message": "Image passed along to the next user!" }
         
 ## Querying [/image/query]
-If you don't receive push notifications, you can query to see if there are any images waiting for you to add on to. **The format of the image JSON objects in the `items` list is also the format you should expect for push notifications.** Todo: Restrictions on brushes being returned in these image objects.
+If you don't receive push notifications, you can query to see if there are any images waiting for you to add on to. **The format of the image JSON objects in the `items` list is also the format you should expect for push notifications.** If an image has 0 hops left, it means it is ready for you to view. Todo: Restrictions on brushes being returned in these image objects.
 
 ### Query for Images [POST]
 
@@ -86,8 +86,8 @@ If you don't receive push notifications, you can query to see if there are any i
 + Response 200 (application/json)
 
         { "success": true, "items": [
-            { "imageID": 12, "from": "someOtherUsername", "ttl": 10, "image": "someBase64Image" },
-            { "imageID": 14, "from": "someOtherUsername", "ttl": 10, "image": "someBase64Image" }
+            { "imageID": 12, "from": "someOtherUsername", "editTime": 10, "hopsLeft": 6, "image": "someBase64Image" },
+            { "imageID": 14, "from": "someOtherUsername", "editTime": 10, "hopsLeft": 0, "image": "someBase64Image" }
             ]
         }
         
