@@ -1,3 +1,4 @@
+import bottle
 from bottle import error, get, post, run, request
 import database
 import uuid
