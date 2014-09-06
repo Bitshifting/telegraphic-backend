@@ -346,6 +346,10 @@ def imageQuery():
         finalSet.append(thing)
     for thing in secondSet:
         finalSet.append(thing)
+
+    for thing in finalSet:
+        print("Here's an image: " + thing['image'])
+        
     return {'success': True, 'items': finalSet}
 
 
