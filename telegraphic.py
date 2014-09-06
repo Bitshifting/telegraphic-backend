@@ -189,6 +189,22 @@ def userList():
 
     return res
 
+@post('/user/list')
+def userListWithoutMe():
+    """Return a list of users in the database so others can send images to them. Doesn't include yourself."""
+
+    log('Returning a list of users (excluding this one)...')
+    thisUser = accessTokenToUser(request.json['accessToken'])
+
+    con = database.connect()
+    c = con.cursor()
+    c.execute("SELECT username FROM users WHERE username<>:username", {'username': thisUser})
+
+    res = jsonRows(c)
+    database.close(con)
+
+    return res
+
 
 # ######################################################################################################################
 # Image Handling
@@ -318,7 +334,7 @@ def imageQuery():
 
     # Now, we also need any image whose UUID is mentioned with this username in the imageHistory, and whose hopCount is 0
     c.execute(
-        "SELECT imageUUID, previousUser, editTime, hopsLeft, image FROM images JOIN imageHistory ON imageHistory.users=:username WHERE hopsLeft=0",
+        "SELECT image.imageUUID, previousUser, editTime, hopsLeft, image FROM images JOIN imageHistory ON imageHistory.users=:username WHERE hopsLeft=0",
         {'username': thisUser})
 
     secondSet = jsonRows(c).items

@@ -1,6 +1,6 @@
 FORMAT: 1A
-HOST: http://www.google.com
-VERSION: 10
+HOST: http://www.example.com
+VERSION: 11
 
 # telegraphic
 Telegraphic is a collaborative image creation app which gives users only a short amount of time to contribute to a picture before it gets passed along to another user.
@@ -37,6 +37,21 @@ Log in as a user and receive an access token.
 ## User List [/user/list]
 
 ### Get Users [GET]
++ Response 200 (application/json)
+
+        { "success": true, "items": [
+            {"username": "user1"},
+            {"username": "user2"}
+            ]
+        }
+
+### Get Users [POST]
+Same as the GET version, except this excludes your own user in the user list.
+
++ Request (application/json)
+
+        { "accessToken": "someBase64SAccessToken" }
+
 + Response 200 (application/json)
 
         { "success": true, "items": [
