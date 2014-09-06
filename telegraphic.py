@@ -117,7 +117,6 @@ def userRegister():
     if len(request.json['username']) == 0 or len(request.json['passwordHash']) == 0 or len(request.json['phoneNumber']) == 0:
         log('Attempted to register with a 0-length field.')
         return fail('Come on now, no 0-length fields.')
-    
     log("Registering new user account: " + request.json['username'] + " (" + request.json['phoneNumber'] + ") " +
         request.json['passwordHash'])
 
@@ -345,6 +344,8 @@ def imageQuery():
 
     database.close(con)
 
+    print("\tThere are " + len(firstSet) + " images that need completing by this user.")
+    print("\tThere are " + len(secondSet) + " images that are done and need viewing by this user.")
     finalSet = []
     for thing in firstSet:
         finalSet.append(thing)
