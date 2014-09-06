@@ -276,6 +276,9 @@ def imageCreate():
     c.execute("INSERT INTO imageHistory (imageUUID, username) VALUES (:imageUUID, :username)",
               {'imageUUID': thisImageUUID, 'username': thisUser})
 
+
+    print('\n\n\nUUID: ' + str(thisImageUUID) + '\n\n\n')
+
     # TODO: Send push notification to the next user.
 
     database.close(con)
@@ -303,6 +306,8 @@ def imageUpdate():
         return fail('No UUID specified.')
 
     log('Updating image...')
+
+    print('\n\n\nUUID: ' + str(request.json['uuid']) + '\n\n\n')
 
     # Check that this image has this user specified as its next user (aka that we have permission to edit this image).
     thisUser = accessTokenToUser(request.json['accessToken'])
