@@ -28,7 +28,8 @@ CREATE_TABLE_IMAGES = """
         createdOn INTEGER DEFAULT strftime('%s', 'now') NOT NULL,
         hopsLeft INTEGER NOT NULL,
         editTime INTEGER NOT NULL,
-        image BLOB NOT NULL
+        image BLOB NOT NULL,
+        nextUser REFERENCES users (username)
     )
 """
 

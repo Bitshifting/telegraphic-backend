@@ -22,6 +22,7 @@ def success(msg):
     """Returns a success JSON to the user."""
     return {'success': True, 'message': msg}
 
+
 # #
 # Helper functions
 # #
@@ -56,6 +57,43 @@ def jsonRows(cursor):
 
     return responseDict
 
+
+# #
+# Access token functions
+# #
+
+def checkAccessToken(token):
+    """Make sure a certain access token is still valid and can be used to manipulate pictures."""
+
+    if not 'accessToken' in request.json.keys():
+        return False
+
+    con = database.connect()
+    c = con.cursor()
+    c.execute("SELECT COUNT(*) FROM activeAccessTokens WHERE accessToken=:accessToken",
+              {'accessToken', request.json['accessToken']})
+
+    r = c.fetchone()
+
+    if r[0] == 0:
+        return False
+    return True
+
+
+def accessTokenToUser(token):
+    """Look up an access token and find out who the user is."""
+
+    con = database.connect()
+    c = con.cursor()
+    c.execute("SELECT username FROM activeAccessTokens WHERE accessToken=:accessToken", {'accessToken': token})
+
+    r = c.fetchone()
+    v = r[0]
+    database.close(con)
+
+    return v
+
+
 # ######################################################################################################################
 # User Accounts
 # ######################################################################################################################
@@ -65,29 +103,35 @@ def jsonRows(cursor):
 @post('/user/register')
 def userRegister():
     """Register a user."""
-    
+
     if not 'username' in request.json.keys():
         log('Registration attempt but no username provided in request.')
         return fail('Username not provided in registration.')
     if not 'passwordHash' in request.json.keys():
         log('Registration attempt but no password hash provided in request.')
         return fail('Password hash not provided in registration.')
+    if not 'phoneNumber' in request.json.keys():
+        log('Registration attempt but no phone number provided in request.')
+        return fail('Phone number not provided in registration.')
 
-    log("Registering new user account: " + request.json['username'] + " " + request.json['passwordHash'])
+    log("Registering new user account: " + request.json['username'] + " (" + request.json['phoneNumber'] + ") " +
+        request.json['passwordHash'])
 
     # Check that this user doesn't already exist.
     con = database.connect()
     c = con.cursor()
-    c.execute("SELECT COUNT(*) FROM users WHERE username=:username", {'username': request.json['username']})
+    c.execute("SELECT COUNT(*) FROM users WHERE username=:username OR phoneNumber=:phoneNumber",
+              {'username': request.json['username'], 'phoneNumber': request.json['phoneNumber']})
 
     r = c.fetchone()
     if r[0] != 0:
-        log("That username already exists.")
-        return fail('Username already exists.')
+        log("That username or phone number already exists.")
+        return fail('Username or phone number already exists.')
 
     # Ok. Insert them into the database.
-    c.execute("INSERT INTO users (username, passwordHash) VALUES (:username, :passwordHash)",
-              {'username': request.json['username'], 'passwordHash': request.json['passwordHash']})
+    c.execute("INSERT INTO users (username, passwordHash, phoneNumber) VALUES (:username, :passwordHash, :phoneNumber)",
+              {'username': request.json['username'], 'passwordHash': request.json['passwordHash'],
+               'phoneNumber': request.json['phoneNumber']})
 
     database.close(con)
 
@@ -128,10 +172,12 @@ def userLogin():
 
     return {'success': True, 'accessToken': accessKey, 'message': 'Logged in.'}
 
+
 @get('/user/list')
 def userList():
     """Return a list of users in the database so others can send images to them."""
 
+    log('Returning a list of users...')
     con = database.connect()
     c = con.cursor()
     c.execute("SELECT username FROM users")
@@ -140,10 +186,49 @@ def userList():
     database.close(con)
 
     return res
+
+
 # ######################################################################################################################
 # Image Handling
 # ######################################################################################################################
 
+@post('/image/create')
+def imageCreate():
+    """Create an initial image."""
+    if not checkAccessToken():
+        return fail('Invalid access token.')
+    if not 'editTime' in request.json.keys():
+        return fail('No editTime specified.')
+    if not 'hopsLeft' in request.json.keys():
+        return fail('No hopsLeft specified.')
+    if not 'nextUser' in request.json.keys():
+        return fail('No nextUser specified.')
+    if not 'image' in request.json.keys():
+        return fail('No image specified.')
+
+    log('Creating an initial image...')
+
+    # Make sure the next user is valid...
+    con = database.connect()
+    c = con.cursor()
+    c.execute("SELECT COUNT(*) FROM users WHERE username=:nextUser", {'nextUser': request.json['nextUser']})
+    r = c.fetchone()
+    if r[0] == 0:
+        database.close(con)
+        log('Next user was not valid.')
+        return fail('Invalid nextUser.')
+
+    # Add the image to the pending queue.
+    c.execute(
+        "INSERT INTO images (originalOwner, hopsLeft, editTime, image, nextUser) VALUES (:originalOwner, :hopesLeft, :editTime, :image, :nextUser)",
+        {'originalOwner': accessTokenToUser(request.json['accessToken']), 'hopsLeft': request.json['hopsLeft'],
+         'editTime': request.json['editTime'], 'image': request.json['image'], 'nextUser': request.json['nextUser']})
+
+    # TODO: Send push notification
+
+    database.close(con)
+    log('Image successfully created.')
+    return success('Image created and next user will be alerted.')
 
 
 print("Creating tables if need be...")
