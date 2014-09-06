@@ -41,6 +41,21 @@ CREATE_TABLE_IMAGE_HISTORY = """
     )
 """
 
+DROP_TABLE_USERS = """
+    DROP TABLE IF EXISTS users
+"""
+
+DROP_TABLE_ACTIVE_ACCESS_TOKENS = """
+    DROP TABLE IF EXISTS activeAccessTokens
+"""
+
+DROP_TABLE_IMAGES = """
+    DROP TABLE IF EXISTS images
+"""
+
+DROP_TABLE_IMAGE_HISTORY = """
+    DROP TABLE IF EXISTS imageHistory
+"""
 
 # ######################################################################################################################
 # Queries
