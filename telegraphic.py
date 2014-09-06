@@ -272,8 +272,9 @@ def imageUpdate(uuid):
     newHopCount = r[0] - 1
 
     # Also, update the actual image...
-    c.execute("UPDATE images SET hopCount=:hopCount, image=:image, previousUser=:previousUser WHERE imageUUID=:imageUUID",
-              {'hopCount': newHopCount, 'image': request.json['image'], 'imageUUID': uuid, 'previousUser': thisUser})
+    c.execute(
+        "UPDATE images SET hopCount=:hopCount, image=:image, previousUser=:previousUser WHERE imageUUID=:imageUUID",
+        {'hopCount': newHopCount, 'image': request.json['image'], 'imageUUID': uuid, 'previousUser': thisUser})
 
     # Add this user to the affected user list who need to see the final image...
     c.execute("INSERT INTO imageHistory (imageUUID, username) VALUES (:imageUUID, :username)",
@@ -299,20 +300,37 @@ def imageQuery():
     if not checkAccessToken():
         return fail('Invalid access token.')
 
-    # TODO:
+    log('Querying images that belong to this user...')
+    thisUser = accessTokenToUser(request.json['accessToken'])
+
     # Basically, look at the images table and see if any have nextUser set to us. This will be the first set of results.
     # Also look for images in the images table whose hopCount is 0 and with us in the history table linking us to this image.
     con = database.connect()
     c = con.cursor()
 
-    c.execute("SELECT ")
+    # We need the rows from this and also anything that this username has in the image history which hasn't 0 hopCount.
+    c.execute("SELECT imageUUID, previousUser, editTime, hopsLeft, image FROM images WHERE nextUser=:thisUser",
+              {'thisUser': thisUser})
 
+    firstSet = jsonRows(c).items
+
+    # Now, we also need any image whose UUID is mentioned with this username in the imageHistory, and whose hopCount is 0
+    c.execute(
+        "SELECT imageUUID, previousUser, editTime, hopsLeft, image FROM image JOIN imageHistory ON imageHistory.users=:username WHERE hopsLeft=0",
+        {'username': thisUser})
+
+    secondSet = jsonRows(c).items
 
     database.close(con)
 
+    return {'success': True, 'items': firstSet + secondSet}
+
+
+@post('/image/seen')
+def imageSeen():
+    """Set an image's hop count to -1 so it won't appear in the list of images the client gets when they query."""
+
     return {}
-
-
 
 
 print("Creating tables if need be...")
