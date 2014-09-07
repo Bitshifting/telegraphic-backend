@@ -16,8 +16,9 @@ CREATE_TABLE_ACTIVE_ACCESS_TOKENS = """
     CREATE TABLE IF NOT EXISTS activeAccessTokens (
         tokenID INTEGER PRIMARY KEY AUTOINCREMENT,
         accessToken TEXT NOT NULL,
-        username REFERENCES users (username),
-        createdOn INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL
+        username TEXT NOT NULL,
+        createdOn INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        FOREIGN KEY username REFERENCES users (username)
     )
 """
 
@@ -25,13 +26,16 @@ CREATE_TABLE_IMAGES = """
     CREATE TABLE IF NOT EXISTS images (
         imageID INTEGER PRIMARY KEY AUTOINCREMENT,
         imageUUID TEXT NOT NULL,
-        originalOwner REFERENCES users (username),
+        originalOwner TEXT NOT NULL,
         createdOn INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL,
         hopsLeft INTEGER NOT NULL,
         editTime INTEGER NOT NULL,
         image BLOB NOT NULL,
-        nextUser REFERENCES users (username),
-        previousUser REFERENCES users (username)
+        nextUser TEXT,
+        previousUser TEXT,
+        FOREIGN KEY originalOwner REFERENCES users (username),
+        FOREIGN KEY nextUser REFERENCES users(username),
+        FOREIGN KEY previousUser REFERENCES users(username)
     )
 """
 
@@ -40,18 +44,21 @@ CREATE_TABLE_IMAGES = """
 CREATE_TABLE_IMAGE_HISTORY = """
     CREATE TABLE IF NOT EXISTS imageHistory (
         historyID INTEGER PRIMARY KEY AUTOINCREMENT,
-        imageUUID REFERENCES images (imageUUID),
-        username REFERENCES users (username),
-        viewed INTEGER DEFAULT 0 NOT NULL
+        imageUUID TEXT NOT NULL,
+        username TEXT NOT NULL,
+        viewed INTEGER DEFAULT 0 NOT NULL,
+        FOREIGN KEY imageUUID REFERENCES images (imageUUID),
+        FOREIGN KEY username REFERENCES users (username),
     )
 """
 
 CREATE_TABLE_FRIENDS_LIST = """
     CREATE TABLE IF NOT EXISTS friends (
-        friendEntryID INTEGER PRIMARY KEY AUTOINCREMENT,
-        username REFERENCES users (username),
-        friend REFERENCES users (username),
-        UNIQUE(username, friend) ON CONFLICT IGNORE
+        username TEXT NOT NULL,
+        friend TEXT NOT NULL,
+        PRIMARY KEY (username, friend),
+        FOREIGN KEY username REFERENCES users (username),
+        FOREIGN KEY friend REFERENCES users (username)
     )
 """
 
