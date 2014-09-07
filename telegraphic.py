@@ -516,8 +516,9 @@ def getFriends():
     return res
 
 
-@post('/friends/add/<friend>')
-def addFriend(friend):
+@post('/friends/add')
+def addFriend():
+    """Adds a friend to someone's friend list."""
 
     if not checkReady():
         return fail('The API is still booting up... Please wait.')
@@ -525,22 +526,58 @@ def addFriend(friend):
     log('Adding friend...')
 
     if not checkAccessToken():
+        sublog('Bad access token.')
         return fail('Invalid access token.')
+    if not 'friend' in request.json.keys():
+        sublog('No friend specified.')
+        return fail('No friend specified.')
 
     thisUser = accessTokenToUser(request.json['accessToken'])
-    sublog('Name: ' + thisUser + '\n\tFriend: ' + friend)
+    sublog('Name: ' + thisUser + '\n\tFriend: ' + request.json['friend'])
+
+    if request.json['friend'] == thisUser:
+        sublog('User tried to add themself as friend...')
+        return fail('You can\'t add yourself as a friend...')
 
     con = database.connect()
     c = con.cursor()
 
-    c.execute("INSERT INTO friends (username, friend) VALUES (:username, :friend)",
-              {'username': thisUser, 'friend': friend})
+    c.execute("INSERT OR IGNORE INTO friends (username, friend) VALUES (:username, :friend)",
+              {'username': thisUser, 'friend': request.json['friend']})
 
     database.close(con)
 
     sublog('Friend added.')
     return success('Friend added!')
 
+@post('/friends/delete')
+def deleteFriend():
+
+    if not checkReady():
+        return fail('The API is still booting up... Please wait.')
+
+    log('Removing friend...')
+
+    if not checkAccessToken():
+        sublog('Bad access token.')
+        return fail('Invalid access token.')
+    if not 'friend' in request.json.keys():
+        sublog('No friend specified.')
+        return fail('No friend specified.')
+
+    thisUser = accessTokenToUser(request.json['accessToken'])
+    sublog('Name: ' + thisUser + '\n\tFriend: ' + request.json['friend'])
+
+    con = database.connect()
+    c = con.cursor()
+
+    c.execute("DROP FROM friends WHERE username=:username and friend=:friend)",
+              {'username': thisUser, 'friend': request.json['friend']})
+
+    database.close(con)
+
+    sublog('Friend removed.')
+    return success('Friend removed!')
 
 print("Creating tables if need be...")
 database.createTables()

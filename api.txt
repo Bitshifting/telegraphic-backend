@@ -1,6 +1,6 @@
 FORMAT: 1A
 HOST: http://www.example.com
-VERSION: 13
+VERSION: 14
 
 # telegraphic
 Telegraphic is a collaborative image creation app which gives users only a short amount of time to contribute to a picture before it gets passed along to another user.
@@ -138,7 +138,7 @@ You can send telegraphics to any user you want if you specify their name, but it
             ]
         }
 
-## Add Friend [/friends/add/{username}]
+## Add Friend [/friends/add]
 
 Adds a friend by their username to your favorites/friends list. They don't know about this.
 
@@ -146,8 +146,22 @@ Adds a friend by their username to your favorites/friends list. They don't know 
 
 + Request (application/json)
 
-        { "accessToken": "someUUIDAccessToken" }
+        { "accessToken": "someUUIDAccessToken", "friend": "someFriendName" }
 
 + Response 200 (application/json)
 
         { "success": true, "message": "Friend added!" }
+
+## Remove Friend [/friends/remove]
+
+Removes a friend from your favorites/friends list. They don't know about this.
+
+### Remove Friend [POST]
+
++ Request (application/json)
+
+        { "accessToken": "someUUIDAccessToken", "friend": "someFriendName" }
+
++ Response 200 (application/json)
+
+        { "success": true, "message": "Friend removed!" }
