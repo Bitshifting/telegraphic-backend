@@ -6,21 +6,29 @@ import time
 
 readyForRequests = False
 
+
+def log(msg):
+    """Prints a message alongside the IP of the client that generated it."""
+    print('\n[' + request.remote_addr + '] ' + msg)
+
+
+def sublog(msg):
+    """Prints a message preceeded by a tab."""
+    print('\t' + msg)
+
+
 @error(404)
 def error404(error):
     return "404"
+
 
 @get('/kickoff')
 def kickoff():
     """Because bottle stupidly starts before the database is actually created basically."""
     global readyForRequests
     readyForRequests = True
-    print("Ready for requests.")
+    log("Ready for requests.")
     return {'success': True, 'message': 'Hopefully now ready for requests.'}
-
-def log(msg):
-    """Prints a message alongside the IP of the client that generated it."""
-    print('[' + request.remote_addr + '] ' + msg)
 
 
 def fail(msg):
@@ -32,11 +40,13 @@ def success(msg):
     """Returns a success JSON to the user."""
     return {'success': True, 'message': msg}
 
+
 def checkReady():
     if not readyForRequests:
         log('Not ready...')
         return False
     return True
+
 
 # #
 # Helper functions
@@ -98,12 +108,15 @@ def checkAccessToken():
 def accessTokenToUser(token):
     """Look up an access token and find out who the user is."""
 
+    print("\tLooking up user UUID " + token + "... "),
+
     con = database.connect()
     c = con.cursor()
     c.execute("SELECT username FROM activeAccessTokens WHERE accessToken=:accessToken", {'accessToken': token})
 
     r = c.fetchone()
     v = r[0]
+    print('It\'s ' + v)
     database.close(con)
 
     return v
@@ -113,29 +126,30 @@ def accessTokenToUser(token):
 # User Accounts
 # ######################################################################################################################
 
-# Register user
-
 @post('/user/register')
 def userRegister():
-    checkReady()
     """Register a user."""
 
+    checkReady()
+    log('Attempting to register...')
+
     if not 'username' in request.json.keys():
-        log('Registration attempt but no username provided in request.')
+        sublog('Registration attempt but no username provided in request.')
         return fail('Username not provided in registration.')
     if not 'passwordHash' in request.json.keys():
-        log('Registration attempt but no password hash provided in request.')
+        sublog('Registration attempt but no password hash provided in request.')
         return fail('Password hash not provided in registration.')
     if not 'phoneNumber' in request.json.keys():
-        log('Registration attempt but no phone number provided in request.')
+        sublog('Registration attempt but no phone number provided in request.')
         return fail('Phone number not provided in registration.')
 
     if len(request.json['username']) == 0 or len(request.json['passwordHash']) == 0 or len(
             request.json['phoneNumber']) == 0:
-        log('Attempted to register with a 0-length field.')
+        sublog('Attempted to register with a 0-length field.')
         return fail('Come on now, no 0-length fields.')
-    log("Registering new user account: " + request.json['username'] + " (" + request.json['phoneNumber'] + ") " +
-        request.json['passwordHash'])
+
+    sublog("Name: " + request.json['username'] + "\n\tPhone: (" + request.json['phoneNumber'] + ")\n\tHash: " +
+           request.json['passwordHash'])
 
     # Check that this user doesn't already exist.
     con = database.connect()
@@ -145,7 +159,7 @@ def userRegister():
 
     r = c.fetchone()
     if r[0] != 0:
-        log("That username or phone number already exists.")
+        sublog("That username or phone number already exists.")
         return fail('Username or phone number already exists.')
 
     # Ok. Insert them into the database.
@@ -155,7 +169,7 @@ def userRegister():
 
     database.close(con)
 
-    log("User registered.")
+    sublog("User registered.")
     return success('User registered.')
 
 
@@ -164,14 +178,15 @@ def userLogin():
     """Log a user in and generate a unique ID for this session."""
     checkReady()
 
+    log('Logging in...')
     if not 'username' in request.json.keys():
-        log('Login attempt but no username provided in request.')
+        sublog('No username provided in request.')
         return fail('Username not provided in login.')
     if not 'passwordHash' in request.json.keys():
-        log('Login attempt but no password hash provided in request.')
+        sublog('No password hash provided in request.')
         return fail('Password hash not provided in login.')
 
-    log('Attempt login ' + request.json['username'] + ' ' + request.json['passwordHash'])
+    sublog('Name: ' + request.json['username'] + '\n\tHash: ' + request.json['passwordHash'])
 
     # Check if this is the correct password.
     con = database.connect()
@@ -181,7 +196,7 @@ def userLogin():
 
     r = c.fetchone()
     if r[0] == 0:
-        log('Login failed.')
+        sublog('Login failed.')
         return fail('Invalid username or password.')
 
     # Alright, they've logged in, now generate a random access key and give it to them.
@@ -192,7 +207,7 @@ def userLogin():
               {'accessToken': accessToken, 'username': request.json['username']})
     database.close(con)
 
-    log('Successful login.')
+    sublog('Login success.')
     return {'success': True, 'accessToken': accessToken, 'message': 'Logged in.'}
 
 
@@ -201,13 +216,15 @@ def userList():
     """Return a list of users in the database so others can send images to them."""
     checkReady()
 
-    log('Returning a list of users...')
+    log('Getting user list...')
+
     con = database.connect()
     c = con.cursor()
     c.execute("SELECT username FROM users")
 
     res = jsonRows(c)
     database.close(con)
+    sublog('Ok.')
 
     return res
 
@@ -217,8 +234,14 @@ def userListWithoutMe():
     """Return a list of users in the database so others can send images to them. Doesn't include yourself."""
     checkReady()
 
-    log('Returning a list of users (excluding this one)...')
+    log('Getting user list (exclusive)...')
+
+    if not 'accessToken' in request.json.keys():
+        sublog('No access token.')
+        return fail('No access token in request.')
+
     thisUser = accessTokenToUser(request.json['accessToken'])
+    sublog('Name: ' + thisUser)
 
     con = database.connect()
     c = con.cursor()
@@ -226,6 +249,7 @@ def userListWithoutMe():
 
     res = jsonRows(c)
     database.close(con)
+    sublog('Ok.')
 
     return res
 
@@ -239,32 +263,43 @@ def imageCreate():
     """Create an initial image."""
     checkReady()
 
+    log('Creating the first image...')
+
     if not checkAccessToken():
+        sublog('No access token.')
         return fail('Invalid access token.')
     if not 'editTime' in request.json.keys():
+        sublog('No editTime specified.')
         return fail('No editTime specified.')
     if not 'hopsLeft' in request.json.keys():
+        sublog('No hopsLeft specified.')
         return fail('No hopsLeft specified.')
     if not 'nextUser' in request.json.keys():
+        sublog('No nextUser specified.')
         return fail('No nextUser specified.')
     if not 'image' in request.json.keys():
+        sublog('No image specified.')
         return fail('No image specified.')
 
-    log('Creating an initial image...')
+    sublog('Edit time: ' + str(request.json['editTime']) + '\n\tHops: ' + str(
+        request.json['hopsLeft']) + '\n\tNext user: ' + request.json['nextUser'] + '\n\tImage: (yes)')
 
     # Make sure the next user is valid...
     con = database.connect()
     c = con.cursor()
     c.execute("SELECT COUNT(*) FROM users WHERE username=:nextUser", {'nextUser': request.json['nextUser']})
+
     r = c.fetchone()
     if r[0] == 0:
         database.close(con)
-        log('Next user was not valid.')
+        sublog('Next user was not valid.')
         return fail('Invalid nextUser.')
 
     # Add the image to the pending queue.
     thisUser = accessTokenToUser(request.json['accessToken'])
     thisImageUUID = str(uuid.uuid1())
+
+    sublog('Name: ' + thisUser)
 
     c.execute(
         "INSERT INTO images (imageUUID, originalOwner, hopsLeft, editTime, image, nextUser, previousUser) VALUES (:imageUUID, :originalOwner, :hopsLeft, :editTime, :image, :nextUser, :previousUser)",
@@ -276,13 +311,11 @@ def imageCreate():
     c.execute("INSERT INTO imageHistory (imageUUID, username) VALUES (:imageUUID, :username)",
               {'imageUUID': thisImageUUID, 'username': thisUser})
 
-
-    print('\n\n\nUUID: ' + str(thisImageUUID) + '\n\n\n')
-
     # TODO: Send push notification to the next user.
 
     database.close(con)
-    log('Image successfully created.')
+    sublog('Image created.')
+
     return success('Image created and next user will be alerted.')
 
 
@@ -292,25 +325,23 @@ def imageUpdate():
     list of pending images that people need to see (and send push notifications)."""
     checkReady()
 
+    log('Updating an image...')
     if not checkAccessToken():
-        log('Attempted update but bad access token.')
+        sublog('Bad access token.')
         return fail('Invalid access token.')
     if not 'nextUser' in request.json.keys():
-        log('Attempted update but no nextUser.')
+        sublog('No nextUser.')
         return fail('No nextUser specified.')
     if not 'image' in request.json.keys():
-        log('Attempted update but no image.')
+        log('No image.')
         return fail('No image specified.')
     if not 'uuid' in request.json.keys():
-        log('Attempted update but no uuid.')
+        log('No uuid.')
         return fail('No UUID specified.')
-
-    log('Updating image...')
-
-    print('\n\n\nUUID: ' + str(request.json['uuid']) + '\n\n\n')
 
     # Check that this image has this user specified as its next user (aka that we have permission to edit this image).
     thisUser = accessTokenToUser(request.json['accessToken'])
+    sublog('Name: ' + thisUser)
 
     con = database.connect()
     c = con.cursor()
@@ -320,7 +351,7 @@ def imageUpdate():
     r = c.fetchone()
 
     if r[0] == 0:
-        log('Not allowed to update this image, or the image does not exist.')
+        sublog('Not allowed to update this image, or the image does not exist.')
         return fail('Not the next user, or this image does not exist.')
 
     # Decrement its hop count and update its next user. If hop count is 0, set next user to null.
@@ -343,16 +374,15 @@ def imageUpdate():
     if r[0] == 0:
         c.execute("INSERT INTO imageHistory (imageUUID, username) VALUES (:imageUUID, :username)",
                   {'imageUUID': request.json['uuid'], 'username': thisUser})
-        log('IN THE IMAGE HISTORY ADD THING!!!!!!!!!!!\n\n\n\n\n')
 
-    print("\tNew hop count: " + str(newHopsLeft) + "; Next user is " + str(request.json['nextUser']))
+    sublog('Next user: ' + request.json['nextUser'] + '\n\tHops left: ' + str(newHopsLeft))
 
     # Check if this is the final hop and if so, alert all users.
     if newHopsLeft == 0:
-        log('Image updated, at the end of the line. Notifying all users.')
+        sublog('Image updated and no more hops, notifying all users...')
         # TODO: Push notifications to all users...
     else:
-        log('Image updated, passing to next user.')
+        sublog('Image updated, notifying next user.')
         # TODO: Push notify nextUser
 
     database.close(con)
@@ -365,11 +395,14 @@ def imageQuery():
      finished images."""
     checkReady()
 
+    log('Querying for list of actionable images...')
+
     if not checkAccessToken():
+        sublog('Bad access token.')
         return fail('Invalid access token.')
 
     thisUser = accessTokenToUser(request.json['accessToken'])
-    log('Querying images that belong to ' + thisUser)
+    sublog('Name: ' + thisUser)
 
     # Basically, look at the images table and see if any have nextUser set to us. This will be the first set of results.
     # Also look for images in the images table whose hopCount is 0 and with us in the history table linking us to this image.
@@ -377,8 +410,9 @@ def imageQuery():
     c = con.cursor()
 
     # We need the rows from this and also anything that this username has in the image history which hasn't 0 hopCount.
-    c.execute("SELECT imageUUID, previousUser, editTime, hopsLeft, image FROM images WHERE nextUser=:thisUser AND hopsLeft<>0",
-              {'thisUser': thisUser})
+    c.execute(
+        "SELECT imageUUID, previousUser, editTime, hopsLeft, image FROM images WHERE nextUser=:thisUser AND hopsLeft<>0",
+        {'thisUser': thisUser})
 
     firstSet = jsonRows(c)['items']
 
@@ -391,8 +425,9 @@ def imageQuery():
 
     database.close(con)
 
-    print("\tThere are " + str(len(firstSet)) + " images that need completing.")
-    print("\tThere are " + str(len(secondSet)) + " images that are done and need viewing.")
+    sublog("Unfinished images: " + str(len(firstSet)))
+    sublog("Finished images: " + str(len(secondSet)))
+
     finalSet = []
     for thing in firstSet:
         finalSet.append(thing)
@@ -407,15 +442,18 @@ def imageSeen():
     """Set an image's hop count to -1 so it won't appear in the list of images the client gets when they query."""
     checkReady()
 
+    log('Marking image as seen...')
+
     if not checkAccessToken():
+        sublog('Bad access token.')
         return fail('Invalid access token.')
     if not 'uuid' in request.json.keys():
+        sublog('No UUID specified.')
         return fail('No UUID specified.')
-
-    log('Client marking image seen...')
 
     # Make sure a client can only mark their own images as seen, and only images that have a hopCount of 0.
     thisUser = accessTokenToUser(request.json['accessToken'])
+    sublog('Name: ' + thisUser)
 
     con = database.connect()
     c = con.cursor()
@@ -425,7 +463,7 @@ def imageSeen():
 
     database.close(con)
 
-    log('Client acknowledgement complete.')
+    sublog('Acknowledgement complete.')
     return success('Successfully acknowledged image.')
 
 
@@ -435,13 +473,17 @@ def imageSeen():
 
 @post('/friends')
 def getFriends():
+    """Get the friends list of a client."""
     checkReady()
 
+    log('Checking friends list...')
+
     if not checkAccessToken():
+        sublog('Bad access token.')
         return fail('Invalid access token.')
 
     thisUser = accessTokenToUser(request.json['accessToken'])
-    log('Getting friends list for ' + thisUser)
+    sublog('Name: ' + thisUser)
 
     con = database.connect()
     c = con.cursor()
@@ -451,6 +493,7 @@ def getFriends():
     res = jsonRows(c)
     database.close(con)
 
+    sublog('Ok.')
     return res
 
 
@@ -458,11 +501,13 @@ def getFriends():
 def addFriend(friend):
     checkReady()
 
+    log('Adding friend...')
+
     if not checkAccessToken():
         return fail('Invalid access token.')
 
     thisUser = accessTokenToUser(request.json['accessToken'])
-    log('Adding friend ' + friend + ' for user ' + thisUser)
+    sublog('Name: ' + thisUser + '\n\tFriend: ' + friend)
 
     con = database.connect()
     c = con.cursor()
@@ -472,11 +517,13 @@ def addFriend(friend):
 
     database.close(con)
 
+    sublog('Friend added.')
     return success('Friend added!')
 
 
 print("Creating tables if need be...")
 database.createTables()
+
 print("API starting...")
-bottle.BaseRequest.MEMFILE_MAX = 15000000
-run(host='kersten.io', port=8888, quiet=False)
+bottle.BaseRequest.MEMFILE_MAX = 15000000  # The base64-encoded images can get pretty big; prevent JSON parse from fail.
+run(host='kersten.io', port=8888, quiet=True)
