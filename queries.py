@@ -49,8 +49,9 @@ CREATE_TABLE_IMAGE_HISTORY = """
 CREATE_TABLE_FRIENDS_LIST = """
     CREATE TABLE IF NOT EXISTS friends (
         friendEntryID INTEGER PRIMARY KEY AUTOINCREMENT,
-        username REFERENCES users (username) UNIQUE,
-        friend REFERENCES users (username) UNIQUE
+        username REFERENCES users (username),
+        friend REFERENCES users (username),
+        UNIQUE(username, friend) ON CONFLICT IGNORE
     )
 """
 
