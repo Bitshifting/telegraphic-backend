@@ -9,7 +9,7 @@ readyForRequests = False
 
 def log(msg):
     """Prints a message alongside the IP of the client that generated it."""
-    print('\n[' + request.remote_addr + '] ' + msg)
+    print('\n[' + request.remote_addr + ' ' + time.time() + '] ' + msg)
 
 
 def sublog(msg):
@@ -108,7 +108,7 @@ def checkAccessToken():
 def accessTokenToUser(token):
     """Look up an access token and find out who the user is."""
 
-    print("\tLooking up user UUID " + token + "... "),
+    print("\tLooking up user: " + token + "... "),
 
     con = database.connect()
     c = con.cursor()
