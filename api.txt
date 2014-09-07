@@ -1,6 +1,6 @@
 FORMAT: 1A
 HOST: http://www.example.com
-VERSION: 14
+VERSION: 15
 
 # telegraphic
 Telegraphic is a collaborative image creation app which gives users only a short amount of time to contribute to a picture before it gets passed along to another user.
@@ -152,7 +152,7 @@ Adds a friend by their username to your favorites/friends list. They don't know 
 
         { "success": true, "message": "Friend added!" }
 
-## Remove Friend [/friends/remove]
+## Remove Friend [/friends/delete]
 
 Removes a friend from your favorites/friends list. They don't know about this.
 

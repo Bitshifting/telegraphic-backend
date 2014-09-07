@@ -571,7 +571,7 @@ def deleteFriend():
     con = database.connect()
     c = con.cursor()
 
-    c.execute("DELETE FROM friends WHERE username=:username and friend=:friend)",
+    c.execute("DELETE FROM friends WHERE username=:username and friend=:friend",
               {'username': thisUser, 'friend': request.json['friend']})
 
     database.close(con)
