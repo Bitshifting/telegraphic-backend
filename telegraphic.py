@@ -9,7 +9,7 @@ readyForRequests = False
 
 def log(msg):
     """Prints a message alongside the IP of the client that generated it."""
-    print('\n[' + request.remote_addr + ' ' + time.time() + '] ' + msg)
+    print('\n[' + request.remote_addr + ' ' + str(time.time()) + '] ' + msg)
 
 
 def sublog(msg):
