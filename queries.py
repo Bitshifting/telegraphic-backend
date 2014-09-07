@@ -7,7 +7,7 @@ CREATE_TABLE_USERS = """
          userID INTEGER PRIMARY KEY AUTOINCREMENT,
          username TEXT NOT NULL,
          passwordHash TEXT NOT NULL,
-        createdOn INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL,
+         createdOn INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL,
          phoneNumber TEXT NOT NULL
      )
 """
@@ -26,14 +26,14 @@ CREATE_TABLE_IMAGES = """
     CREATE TABLE IF NOT EXISTS images (
         imageID INTEGER PRIMARY KEY AUTOINCREMENT,
         imageUUID TEXT NOT NULL,
-        originalOwner TEXT NOT NULL,
+        originalOwner TEXT,
         createdOn INTEGER DEFAULT CURRENT_TIMESTAMP NOT NULL,
         hopsLeft INTEGER NOT NULL,
         editTime INTEGER NOT NULL,
         image BLOB NOT NULL,
         nextUser TEXT,
         previousUser TEXT,
-        FOREIGN KEY originalOwner REFERENCES users (username),
+        FOREIGN KEY originalOwner REFERENCES users(username),
         FOREIGN KEY nextUser REFERENCES users(username),
         FOREIGN KEY previousUser REFERENCES users(username)
     )
