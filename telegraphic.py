@@ -10,7 +10,7 @@ timeStarted = time.time()
 def log(msg):
     global timeStarted
     """Prints a message alongside the IP of the client that generated it."""
-    print('\n[' + request.remote_addr + ' ' + str(time.time()) + ' (+' + (time.time() - timeStarted) + ')] ' + msg)
+    print('\n[' + request.remote_addr + ' ' + str(time.time()) + ' (+' + str(time.time() - timeStarted) + ')] ' + msg)
 
 
 def sublog(msg):
