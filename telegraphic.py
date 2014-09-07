@@ -5,11 +5,12 @@ import uuid
 import time
 
 readyForRequests = False
-
+timeStarted = time.time()
 
 def log(msg):
+    global timeStarted
     """Prints a message alongside the IP of the client that generated it."""
-    print('\n[' + request.remote_addr + ' ' + str(time.time()) + '] ' + msg)
+    print('\n[' + request.remote_addr + ' ' + str(time.time()) + ' (+' + (time.time() - timeStarted) + ')] ' + msg)
 
 
 def sublog(msg):
@@ -130,7 +131,9 @@ def accessTokenToUser(token):
 def userRegister():
     """Register a user."""
 
-    checkReady()
+    if not checkReady():
+        return fail('The API is still booting up... Please wait.')
+
     log('Attempting to register...')
 
     if not 'username' in request.json.keys():
@@ -176,7 +179,9 @@ def userRegister():
 @post('/user/login')
 def userLogin():
     """Log a user in and generate a unique ID for this session."""
-    checkReady()
+
+    if not checkReady():
+        return fail('The API is still booting up... Please wait.')
 
     log('Logging in...')
     if not 'username' in request.json.keys():
@@ -214,7 +219,9 @@ def userLogin():
 @get('/user/list')
 def userList():
     """Return a list of users in the database so others can send images to them."""
-    checkReady()
+
+    if not checkReady():
+        return fail('The API is still booting up... Please wait.')
 
     log('Getting user list...')
 
@@ -232,7 +239,9 @@ def userList():
 @post('/user/list')
 def userListWithoutMe():
     """Return a list of users in the database so others can send images to them. Doesn't include yourself."""
-    checkReady()
+
+    if not checkReady():
+        return fail('The API is still booting up... Please wait.')
 
     log('Getting user list (exclusive)...')
 
@@ -261,7 +270,9 @@ def userListWithoutMe():
 @post('/image/create')
 def imageCreate():
     """Create an initial image."""
-    checkReady()
+
+    if not checkReady():
+        return fail('The API is still booting up... Please wait.')
 
     log('Creating the first image...')
 
@@ -323,7 +334,9 @@ def imageCreate():
 def imageUpdate():
     """Update an existing image, and decrement its number of hops. If it reaches the end of its life, add it to the
     list of pending images that people need to see (and send push notifications)."""
-    checkReady()
+
+    if not checkReady():
+        return fail('The API is still booting up... Please wait.')
 
     log('Updating an image...')
     if not checkAccessToken():
@@ -393,7 +406,9 @@ def imageUpdate():
 def imageQuery():
     """Returns a list of images that a user should see. Some might be incomplete, needing additions, and others might be
      finished images."""
-    checkReady()
+
+    if not checkReady():
+        return fail('The API is still booting up... Please wait.')
 
     log('Querying for list of actionable images...')
 
@@ -440,7 +455,9 @@ def imageQuery():
 @post('/image/seen')
 def imageSeen():
     """Set an image's hop count to -1 so it won't appear in the list of images the client gets when they query."""
-    checkReady()
+
+    if not checkReady():
+        return fail('The API is still booting up... Please wait.')
 
     log('Marking image as seen...')
 
@@ -474,7 +491,9 @@ def imageSeen():
 @post('/friends')
 def getFriends():
     """Get the friends list of a client."""
-    checkReady()
+
+    if not checkReady():
+        return fail('The API is still booting up... Please wait.')
 
     log('Checking friends list...')
 
@@ -499,7 +518,9 @@ def getFriends():
 
 @post('/friends/add/<friend>')
 def addFriend(friend):
-    checkReady()
+
+    if not checkReady():
+        return fail('The API is still booting up... Please wait.')
 
     log('Adding friend...')
 
