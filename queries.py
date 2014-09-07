@@ -48,7 +48,7 @@ CREATE_TABLE_IMAGE_HISTORY = """
         username TEXT NOT NULL,
         viewed INTEGER DEFAULT 0 NOT NULL,
         FOREIGN KEY (imageUUID) REFERENCES images (imageUUID),
-        FOREIGN KEY (username) REFERENCES users (username),
+        FOREIGN KEY (username) REFERENCES users (username)
     )
 """
 
