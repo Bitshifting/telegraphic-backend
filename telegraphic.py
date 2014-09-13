@@ -426,14 +426,14 @@ def imageQuery():
 
     # We need the rows from this and also anything that this username has in the image history which hasn't 0 hopCount.
     c.execute(
-        "SELECT imageUUID, previousUser, editTime, hopsLeft, image FROM images WHERE nextUser=:thisUser AND hopsLeft<>0",
+        "SELECT imageUUID, previousUser, editTime, hopsLeft FROM images WHERE nextUser=:thisUser AND hopsLeft<>0",
         {'thisUser': thisUser})
 
     firstSet = jsonRows(c)['items']
 
     # Now, we also need any image whose UUID is mentioned with this username in the imageHistory, and whose hopCount is 0
     c.execute(
-        "SELECT imageUUID, previousUser, editTime, hopsLeft, image FROM images AS III WHERE III.imageUUID IN (SELECT imageUUID FROM imageHistory WHERE username=:username AND viewed=0) AND hopsLeft=0",
+        "SELECT imageUUID, previousUser, editTime, hopsLeft FROM images AS III WHERE III.imageUUID IN (SELECT imageUUID FROM imageHistory WHERE username=:username AND viewed=0) AND hopsLeft=0",
         {'username': thisUser})
 
     secondSet = jsonRows(c)['items']
@@ -450,6 +450,43 @@ def imageQuery():
         finalSet.append(thing)
 
     return {'success': True, 'items': finalSet}
+
+@post('/image/fetch')
+def imageFetch():
+    """Returns the actual image data based on an imageUUID if the user can see it."""
+
+    if not checkReady():
+        return fail('The API is still booting up... Please wait.')
+
+    log('Fetching actual image data...')
+
+    if not checkAccessToken():
+        sublog('Bad access token.')
+        return fail('Invalid access token.')
+    if not 'uuid' in request.json.keys():
+        sublog('No image ID specified for fetch.')
+        return fail('No image ID specified for fetch.')
+
+    thisUser = accessTokenToUser(request.json['accessToken'])
+    sublog('Name: ' + thisUser)
+
+    # Since presumably if the user has a UUID, it knows the image exists and it must somehow be authorized to see it
+    # (probably), so just give in and return it, unless the hop count is -1.
+    con = database.connect()
+    c = con.cursor()
+    c.execute("SELECT image FROM images WHERE imageUUID=:imageUUID AND hopCount>=0", {'imageUUID': request.json['uuid']})
+
+    r = c.fetchone()
+
+    if len(r) == 0:
+        sublog('No rows...')
+        database.close(con)
+        return fail('No image by that UUID.')
+
+    arr = {'success': True, 'image': r[0]}
+    database.close(con)
+
+    return arr
 
 
 @post('/image/seen')
