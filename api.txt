@@ -1,6 +1,6 @@
 FORMAT: 1A
 HOST: http://www.example.com
-VERSION: 15
+VERSION: 16
 
 # telegraphic
 Telegraphic is a collaborative image creation app which gives users only a short amount of time to contribute to a picture before it gets passed along to another user.
@@ -90,7 +90,7 @@ Using the ID that you get from a push notification or from querying images that 
         { "success": true, "message": "Image passed along to the next user!" }
         
 ## Querying [/image/query]
-If you don't receive push notifications, you can query to see if there are any images waiting for you to add on to. **The format of the image JSON objects in the `items` list is also the format you should expect for push notifications.** If an image has 0 hops left, it means it is ready for you to view. Todo: Restrictions on brushes being returned in these image objects.
+If you don't receive push notifications, you can query to see if there are any images waiting for you to add on to. **The format of the image JSON objects in the `items` list is also the format you should expect for push notifications.** If an image has 0 hops left, it means it is ready for you to view. Todo: Restrictions on brushes being returned in these image objects. To get the actual image data here, you need to do a separate query (fetch).
 
 ### Query for Images [POST]
 
@@ -101,10 +101,24 @@ If you don't receive push notifications, you can query to see if there are any i
 + Response 200 (application/json)
 
         { "success": true, "items": [
-            { "imageUUID": "someUUIDImageID", "previousUser": "someOtherUsername", "editTime": 10, "hopsLeft": 6, "image": "someBase64Image" },
-            { "imageUUID": "someUUIDImageID", "previousUser": "someOtherUsername", "editTime": 10, "hopsLeft": 0, "image": "someBase64Image" }
+            { "imageUUID": "someUUIDImageID", "previousUser": "someOtherUsername", "editTime": 10, "hopsLeft": 6 },
+            { "imageUUID": "someUUIDImageID", "previousUser": "someOtherUsername", "editTime": 10, "hopsLeft": 0 }
             ]
         }
+        
+        
+## Fetching [/image/fetch]
+Once you have identified an image that you want to present, you must fetch it using its imageUUID. This won't return any metadata about the image (like `hopsLeft`) so be sure to hang on to that from the query call, and just use this to get the actual image to present.
+
+### Fetch an Image [POST]
+
++ Request (application/json)
+
+        { "accessToken": "someUUIDAccessToken", "uuid": "someUUIDImageID" }
+
++ Response 200 (application/json)
+        
+        { "success": true, "image": "someBase64Image" }
 
 ## Cleanup [/image/seen]
 Once an image has been finished, and a user who contributed to the image has viewed it, that user should hit this endpoint to avoid being notified again about this image (otherwis it will stay in the alert queue).
