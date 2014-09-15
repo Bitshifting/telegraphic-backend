@@ -219,7 +219,8 @@ def userLogin():
 
 @post('/user/list')
 def userListWithoutMe():
-    """Return a list of users in the database so others can send images to them. Doesn't include yourself."""
+    """Return a list of users in the database so others can send images to them. Doesn't include yourself. User
+    specify a search string to narrow down potential users and provide auto-complete functionality."""
 
     if not checkReady():
         return fail('The API is still booting up... Please wait.')
@@ -235,7 +236,20 @@ def userListWithoutMe():
 
     con = database.connect()
     c = con.cursor()
-    c.execute("SELECT username FROM users WHERE username<>:username", {'username': thisUser})
+
+    if not 'search' in request.json.keys():
+        sublog('Returning up to 100 non-specific users...')
+        c.execute("SELECT username FROM users WHERE username<>:username LIMIT 100", {'username': thisUser})
+    else:
+        if len(request.json['search']) < 2:
+            sublog('Search string specified but not long enough.')
+            database.close(con)
+            return fail('Search string not long enough, need at least 2 characters.')
+
+        sublog('Returning up to 100 users that begin with ' + str(request.json['search']))
+        c.execute(
+            "SELECT username FROM users WHERE username<>:username AND username LIKE :search ORDER BY length(username) ASC LIMIT 100",
+            {'username': thisUser, 'search': request.json['search'] + '%'})
 
     res = jsonRows(c)
     database.close(con)

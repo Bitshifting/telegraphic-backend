@@ -1,6 +1,6 @@
 FORMAT: 1A
 HOST: http://www.example.com
-VERSION: 17
+VERSION: 18
 
 # telegraphic
 Telegraphic is a collaborative image creation app which gives users only a short amount of time to contribute to a picture before it gets passed along to another user.
@@ -37,11 +37,11 @@ Log in as a user and receive an access token.
 ## User List [/user/list]
 
 ### Get Users [POST]
-Gets a list of users, excluding yourself.
+Gets a list of users, excluding yourself. Will return a "random" (read: whatever's at the top of the database) subset of 100 users unless you specify a `search` query, which is at least two letters of someone's username - then these names are returned that start with those letters (sorted by increasing length), and you can present them in an auto-complete dropdown or something.
 
 + Request (application/json)
 
-        { "accessToken": "someBase64SAccessToken" }
+        { "accessToken": "someBase64SAccessToken", "search": "atLeast2Letters" }
 
 + Response 200 (application/json)
 
