@@ -7,6 +7,7 @@ import time
 readyForRequests = False
 timeStarted = time.time()
 
+
 def log(msg):
     global timeStarted
     """Prints a message alongside the IP of the client that generated it."""
@@ -214,26 +215,6 @@ def userLogin():
 
     sublog('Login success.')
     return {'success': True, 'accessToken': accessToken, 'message': 'Logged in.'}
-
-
-@get('/user/list')
-def userList():
-    """Return a list of users in the database so others can send images to them."""
-
-    if not checkReady():
-        return fail('The API is still booting up... Please wait.')
-
-    log('Getting user list...')
-
-    con = database.connect()
-    c = con.cursor()
-    c.execute("SELECT username FROM users")
-
-    res = jsonRows(c)
-    database.close(con)
-    sublog('Ok.')
-
-    return res
 
 
 @post('/user/list')
@@ -451,6 +432,7 @@ def imageQuery():
 
     return {'success': True, 'items': finalSet}
 
+
 @post('/image/fetch')
 def imageFetch():
     """Returns the actual image data based on an imageUUID if the user can see it."""
@@ -474,7 +456,8 @@ def imageFetch():
     # (probably), so just give in and return it, unless the hop count is -1.
     con = database.connect()
     c = con.cursor()
-    c.execute("SELECT image FROM images WHERE imageUUID=:imageUUID AND hopCount>=0", {'imageUUID': request.json['uuid']})
+    c.execute("SELECT image FROM images WHERE imageUUID=:imageUUID AND hopCount>=0",
+              {'imageUUID': request.json['uuid']})
 
     r = c.fetchone()
 
@@ -587,9 +570,9 @@ def addFriend():
     sublog('Friend added.')
     return success('Friend added!')
 
+
 @post('/friends/delete')
 def deleteFriend():
-
     if not checkReady():
         return fail('The API is still booting up... Please wait.')
 
@@ -615,6 +598,7 @@ def deleteFriend():
 
     sublog('Friend removed.')
     return success('Friend removed!')
+
 
 print("Creating tables if need be...")
 database.createTables()
